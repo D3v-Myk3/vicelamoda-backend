@@ -1,3 +1,4 @@
+import console from "console";
 import { StatusCodes } from "http-status-codes";
 import jwt from "jsonwebtoken";
 import {
@@ -17,7 +18,6 @@ import { ServiceFunctionParamType, Token } from "../types/general.types";
 import { StoreTblType } from "../types/store.types";
 import { RegisterUserType, UserTblType } from "../types/user.type";
 import { argon2ComparePassword, argon2HashPassword } from "../utils/hash.utils";
-import console from "console";
 
 export const userRegistrationService: ServiceFunctionParamType<
   RegisterUserType
@@ -156,11 +156,7 @@ export const userLoginService: ServiceFunctionParamType<
 
     console.log(response);
 
-    const rest = response as unknown as UserTblType;
-    console.log(rest);
-    const user_store = rest.store ? rest.store : undefined;
-
-    if (!rest) {
+    if (!response) {
       logger.info(`Email verification failed`, {
         source: `${source} (STAGE 1)`,
         params,
@@ -174,6 +170,9 @@ export const userLoginService: ServiceFunctionParamType<
         status: StatusCodes.BAD_REQUEST,
       });
     }
+    const rest = response as unknown as UserTblType;
+    console.log(rest);
+    const user_store = rest.store ? rest.store : undefined;
 
     const verifyPassword = await argon2ComparePassword(
       params.password,
