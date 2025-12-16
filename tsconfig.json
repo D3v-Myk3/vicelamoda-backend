@@ -36,8 +36,8 @@
     "allowUnreachableCode": true,
 
     /* Other useful options */
-    "incremental": true, // Faster rebuilds
-    "tsBuildInfoFile": ".tsbuildinfo"
+    "incremental": true // Faster rebuilds
+    // "tsBuildInfoFile": ".tsbuildinfo"
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist"]
