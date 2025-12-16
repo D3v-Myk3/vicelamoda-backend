@@ -154,7 +154,7 @@ export const userLoginService: ServiceFunctionParamType<
       .exec();
 
     const rest = response as unknown as UserTblType;
-    const user_store = rest.store;
+    const user_store = rest.store || undefined;
 
     if (!rest) {
       logger.info(`Email verification failed`, {
