@@ -1,0 +1,504 @@
+{
+  "products": [
+    {
+      "id": 1,
+      "product_id": "prod_cln_001",
+      "name": "HydraGlow Face Cream",
+      "sku": "HG-FC-001",
+      "description": "Lightweight moisturizing face cream with hyaluronic acid.",
+      "cost_price": "5.00",
+      "selling_price": "12.00",
+      "quantity_in_stock": 50,
+      "unit": "pcs",
+      "status": "active",
+      "createdAt": "2025-01-03T09:00:00.000Z",
+      "updatedAt": "2025-01-03T09:00:00.000Z",
+      "category_id": "cat_cln_face_001",
+      "brand_id": "brand_cos_001",
+      "images": [
+        {
+          "image_url": "https://res.cloudinary.com/devm-cloud-server/image/upload/f_auto/q_auto/serum-bottle_p03u6a?_a=BAMAAAfm0",
+          "is_primary": true
+        }
+      ],
+      "store_stocks": [
+        { "store_id": "cln2g31d4000008jz072lb09k", "quantity": 50 }
+      ]
+    },
+    {
+      "id": 2,
+      "product_id": "prod_cln_002",
+      "name": "Night Repair Serum",
+      "sku": "NR-SRM-002",
+      "description": "Retinol serum for nightly skin renewal.",
+      "cost_price": "8.00",
+      "selling_price": "20.00",
+      "quantity_in_stock": 30,
+      "unit": "pcs",
+      "status": "active",
+      "createdAt": "2025-01-03T09:05:00.000Z",
+      "updatedAt": "2025-01-03T09:05:00.000Z",
+      "category_id": "cat_cln_serum_004",
+      "brand_id": "brand_cos_002",
+      "images": [
+        {
+          "image_url": "https://res.cloudinary.com/devm-cloud-server/image/upload/f_auto/q_auto/facial-mask_ge39xd?_a=BAMAAAfm0",
+          "is_primary": true
+        }
+      ],
+      "store_stocks": [
+        { "store_id": "cln2g31d4000008jz072lb09k", "quantity": 30 }
+      ]
+    },
+    {
+      "id": 3,
+      "product_id": "prod_cln_003",
+      "name": "SPF 50 Ultra",
+      "sku": "SPF-50-003",
+      "description": "Broad spectrum sunscreen lotion SPF50.",
+      "cost_price": "4.00",
+      "selling_price": "10.00",
+      "quantity_in_stock": 80,
+      "unit": "pcs",
+      "status": "active",
+      "createdAt": "2025-01-03T09:10:00.000Z",
+      "updatedAt": "2025-01-03T09:10:00.000Z",
+      "category_id": "cat_cln_sunscreen_003",
+      "brand_id": "brand_cos_003",
+      "images": [
+        {
+          "image_url": "https://res.cloudinary.com/devm-cloud-server/image/upload/f_auto/q_auto/facial-mask_ge39xd?_a=BAMAAAfm0",
+          "is_primary": true
+        }
+      ],
+      "store_stocks": [
+        { "store_id": "cln2g31d4000008jz072lb09k", "quantity": 80 }
+      ]
+    },
+    {
+      "id": 4,
+      "product_id": "prod_cln_004",
+      "name": "Daily Body Lotion",
+      "sku": "DBL-004",
+      "description": "Non-greasy hydrating body lotion.",
+      "cost_price": "3.00",
+      "selling_price": "7.00",
+      "quantity_in_stock": 120,
+      "unit": "pcs",
+      "status": "active",
+      "createdAt": "2025-01-03T09:15:00.000Z",
+      "updatedAt": "2025-01-03T09:15:00.000Z",
+      "category_id": "cat_cln_body_002",
+      "brand_id": "brand_cos_001",
+      "images": [
+        {
+          "image_url": "https://res.cloudinary.com/devm-cloud-server/image/upload/f_auto/q_auto/facial-mask_ge39xd?_a=BAMAAAfm0",
+          "is_primary": true
+        }
+      ],
+      "store_stocks": [
+        { "store_id": "cln2g31d4000008jz072lb09k", "quantity": 120 }
+      ]
+    },
+    {
+      "id": 5,
+      "product_id": "prod_cln_005",
+      "name": "Gentle Cleanser",
+      "sku": "GC-005",
+      "description": "Foam cleanser suitable for sensitive skin.",
+      "cost_price": "2.50",
+      "selling_price": "6.00",
+      "quantity_in_stock": 90,
+      "unit": "pcs",
+      "status": "active",
+      "createdAt": "2025-01-03T09:20:00.000Z",
+      "updatedAt": "2025-01-03T09:20:00.000Z",
+      "category_id": "cat_cln_cleanser_006",
+      "brand_id": "brand_cos_002",
+      "images": [
+        {
+          "image_url": "https://res.cloudinary.com/devm-cloud-server/image/upload/f_auto/q_auto/luxury-cream-product_ksezrw?_a=BAMAAAfm0",
+          "is_primary": true
+        }
+      ],
+      "store_stocks": [
+        { "store_id": "cln2g31d4000008jz072lb09k", "quantity": 90 }
+      ]
+    },
+    {
+      "id": 6,
+      "product_id": "prod_cln_006",
+      "name": "Matte Foundation 30ml",
+      "sku": "MF-006",
+      "description": "Long-wear matte foundation shade N30.",
+      "cost_price": "6.00",
+      "selling_price": "15.00",
+      "quantity_in_stock": 40,
+      "unit": "pcs",
+      "status": "active",
+      "createdAt": "2025-01-03T09:25:00.000Z",
+      "updatedAt": "2025-01-03T09:25:00.000Z",
+      "category_id": "cat_cln_makeup_005",
+      "brand_id": "brand_cos_003",
+      "images": [
+        {
+          "image_url": "https://res.cloudinary.com/devm-cloud-server/image/upload/f_auto/q_auto/body-lotion_y9pioh?_a=BAMAAAfm0",
+          "is_primary": true
+        }
+      ],
+      "store_stocks": [
+        { "store_id": "cln2g31d4000008jz072lb09k", "quantity": 40 }
+      ]
+    },
+    {
+      "id": 7,
+      "product_id": "prod_cln_007",
+      "name": "Refreshing Toner",
+      "sku": "RT-007",
+      "description": "Alcohol-free toner for daily use.",
+      "cost_price": "2.00",
+      "selling_price": "5.00",
+      "quantity_in_stock": 70,
+      "unit": "pcs",
+      "status": "active",
+      "createdAt": "2025-01-03T09:30:00.000Z",
+      "updatedAt": "2025-01-03T09:30:00.000Z",
+      "category_id": "cat_cln_toner_007",
+      "brand_id": "brand_cos_001",
+      "images": [
+        {
+          "image_url": "https://res.cloudinary.com/devm-cloud-server/image/upload/f_auto/q_auto/facial-mask_ge39xd?_a=BAMAAAfm0",
+          "is_primary": true
+        }
+      ],
+      "store_stocks": [
+        { "store_id": "cln2g31d4000008jz072lb09k", "quantity": 70 }
+      ]
+    },
+    {
+      "id": 8,
+      "product_id": "prod_cln_008",
+      "name": "Revive Hair Mask",
+      "sku": "RHM-008",
+      "description": "Deep conditioning hair mask.",
+      "cost_price": "4.50",
+      "selling_price": "11.00",
+      "quantity_in_stock": 60,
+      "unit": "pcs",
+      "status": "active",
+      "createdAt": "2025-01-03T09:35:00.000Z",
+      "updatedAt": "2025-01-03T09:35:00.000Z",
+      "category_id": "cat_cln_hair_008",
+      "brand_id": "brand_cos_002",
+      "images": [
+        {
+          "image_url": "https://res.cloudinary.com/devm-cloud-server/image/upload/f_auto/q_auto/serum-bottle_p03u6a?_a=BAMAAAfm0",
+          "is_primary": true
+        }
+      ],
+      "store_stocks": [
+        { "store_id": "cln2g31d4000008jz072lb09k", "quantity": 60 }
+      ]
+    },
+    {
+      "id": 9,
+      "product_id": "prod_cln_009",
+      "name": "Eau de Lumiere 50ml",
+      "sku": "EDL-009",
+      "description": "Light floral eau de parfum.",
+      "cost_price": "10.00",
+      "selling_price": "28.00",
+      "quantity_in_stock": 25,
+      "unit": "pcs",
+      "status": "active",
+      "createdAt": "2025-01-03T09:40:00.000Z",
+      "updatedAt": "2025-01-03T09:40:00.000Z",
+      "category_id": "cat_cln_fragrance_009",
+      "brand_id": "brand_cos_003",
+      "images": [
+        {
+          "image_url": "https://res.cloudinary.com/devm-cloud-server/image/upload/f_auto/q_auto/body-lotion_y9pioh?_a=BAMAAAfm0",
+          "is_primary": true
+        }
+      ],
+      "store_stocks": [
+        { "store_id": "cln2g31d4000008jz072lb09k", "quantity": 25 }
+      ]
+    },
+    {
+      "id": 10,
+      "product_id": "prod_cln_010",
+      "name": "Nail Polish - Cherry",
+      "sku": "NP-010",
+      "description": "High-shine nail polish red shade.",
+      "cost_price": "1.50",
+      "selling_price": "4.00",
+      "quantity_in_stock": 110,
+      "unit": "pcs",
+      "status": "active",
+      "createdAt": "2025-01-03T09:45:00.000Z",
+      "updatedAt": "2025-01-03T09:45:00.000Z",
+      "category_id": "cat_cln_nail_010",
+      "brand_id": "brand_cos_001",
+      "images": [
+        {
+          "image_url": "https://res.cloudinary.com/devm-cloud-server/image/upload/f_auto/q_auto/shampoo-bottle_pbodr8?_a=BAMAAAfm0",
+          "is_primary": true
+        }
+      ],
+      "store_stocks": [
+        { "store_id": "cln2g31d4000008jz072lb09k", "quantity": 110 }
+      ]
+    },
+    {
+      "id": 11,
+      "product_id": "prod_cln_011",
+      "name": "Men's Aftershave Balm",
+      "sku": "MAB-011",
+      "description": "Soothing aftershave for sensitive skin.",
+      "cost_price": "3.00",
+      "selling_price": "8.00",
+      "quantity_in_stock": 55,
+      "unit": "pcs",
+      "status": "active",
+      "createdAt": "2025-01-03T09:50:00.000Z",
+      "updatedAt": "2025-01-03T09:50:00.000Z",
+      "category_id": "cat_cln_men_care_011",
+      "brand_id": "brand_cos_002",
+      "images": [
+        {
+          "image_url": "https://res.cloudinary.com/devm-cloud-server/image/upload/f_auto/q_auto/shampoo-bottle_pbodr8?_a=BAMAAAfm0",
+          "is_primary": true
+        }
+      ],
+      "store_stocks": [
+        { "store_id": "cln2g31d4000008jz072lb09k", "quantity": 55 }
+      ]
+    },
+    {
+      "id": 12,
+      "product_id": "prod_cln_012",
+      "name": "Brightening Vitamin C Serum",
+      "sku": "VC-012",
+      "description": "Antioxidant serum to brighten skin tone.",
+      "cost_price": "7.00",
+      "selling_price": "18.00",
+      "quantity_in_stock": 35,
+      "unit": "pcs",
+      "status": "active",
+      "createdAt": "2025-01-03T09:55:00.000Z",
+      "updatedAt": "2025-01-03T09:55:00.000Z",
+      "category_id": "cat_cln_serum_004",
+      "brand_id": "brand_cos_003",
+      "images": [
+        {
+          "image_url": "https://res.cloudinary.com/devm-cloud-server/image/upload/f_auto/q_auto/shampoo-bottle_pbodr8?_a=BAMAAAfm0",
+          "is_primary": true
+        }
+      ],
+      "store_stocks": [
+        { "store_id": "cln2g31d4000008jz072lb09k", "quantity": 35 }
+      ]
+    },
+    {
+      "id": 13,
+      "product_id": "prod_cln_013",
+      "name": "Oil Control Gel",
+      "sku": "OCG-013",
+      "description": "Mattifying gel for oily skin.",
+      "cost_price": "2.50",
+      "selling_price": "6.50",
+      "quantity_in_stock": 45,
+      "unit": "pcs",
+      "status": "active",
+      "createdAt": "2025-01-03T10:00:00.000Z",
+      "updatedAt": "2025-01-03T10:00:00.000Z",
+      "category_id": "cat_cln_face_001",
+      "brand_id": "brand_cos_001",
+      "images": [
+        {
+          "image_url": "https://res.cloudinary.com/devm-cloud-server/image/upload/f_auto/q_auto/luxury-cream-product_ksezrw?_a=BAMAAAfm0",
+          "is_primary": true
+        }
+      ],
+      "store_stocks": [
+        { "store_id": "cln2g31d4000008jz072lb09k", "quantity": 45 }
+      ]
+    },
+    {
+      "id": 14,
+      "product_id": "prod_cln_014",
+      "name": "Exfoliating Scrub",
+      "sku": "ES-014",
+      "description": "Gentle scrub for smooth skin.",
+      "cost_price": "2.00",
+      "selling_price": "5.00",
+      "quantity_in_stock": 65,
+      "unit": "pcs",
+      "status": "active",
+      "createdAt": "2025-01-03T10:05:00.000Z",
+      "updatedAt": "2025-01-03T10:05:00.000Z",
+      "category_id": "cat_cln_cleanser_006",
+      "brand_id": "brand_cos_002",
+      "images": [
+        {
+          "image_url": "https://res.cloudinary.com/devm-cloud-server/image/upload/f_auto/q_auto/luxury-cream-product_ksezrw?_a=BAMAAAfm0",
+          "is_primary": true
+        }
+      ],
+      "store_stocks": [
+        { "store_id": "cln2g31d4000008jz072lb09k", "quantity": 65 }
+      ]
+    },
+    {
+      "id": 15,
+      "product_id": "prod_cln_015",
+      "name": "Volumizing Shampoo",
+      "sku": "VS-015",
+      "description": "Shampoo for fuller hair.",
+      "cost_price": "3.50",
+      "selling_price": "9.00",
+      "quantity_in_stock": 75,
+      "unit": "pcs",
+      "status": "active",
+      "createdAt": "2025-01-03T10:10:00.000Z",
+      "updatedAt": "2025-01-03T10:10:00.000Z",
+      "category_id": "cat_cln_hair_008",
+      "brand_id": "brand_cos_003",
+      "images": [
+        {
+          "image_url": "https://res.cloudinary.com/devm-cloud-server/image/upload/f_auto/q_auto/luxury-cream-product_ksezrw?_a=BAMAAAfm0",
+          "is_primary": true
+        }
+      ],
+      "store_stocks": [
+        { "store_id": "cln2g31d4000008jz072lb09k", "quantity": 75 }
+      ]
+    },
+    {
+      "id": 16,
+      "product_id": "prod_cln_016",
+      "name": "Hydrating Face Mist",
+      "sku": "HFM-016",
+      "description": "Refreshing facial mist for hydration.",
+      "cost_price": "1.80",
+      "selling_price": "4.50",
+      "quantity_in_stock": 95,
+      "unit": "pcs",
+      "status": "active",
+      "createdAt": "2025-01-03T10:15:00.000Z",
+      "updatedAt": "2025-01-03T10:15:00.000Z",
+      "category_id": "cat_cln_toner_007",
+      "brand_id": "brand_cos_001",
+      "images": [
+        {
+          "image_url": "https://res.cloudinary.com/devm-cloud-server/image/upload/f_auto/q_auto/facial-mask_ge39xd?_a=BAMAAAfm0",
+          "is_primary": true
+        }
+      ],
+      "store_stocks": [
+        { "store_id": "cln2g31d4000008jz072lb09k", "quantity": 95 }
+      ]
+    },
+    {
+      "id": 17,
+      "product_id": "prod_cln_017",
+      "name": "Smoothing Primer",
+      "sku": "SP-017",
+      "description": "Makeup primer to smooth skin texture.",
+      "cost_price": "4.00",
+      "selling_price": "10.00",
+      "quantity_in_stock": 50,
+      "unit": "pcs",
+      "status": "active",
+      "createdAt": "2025-01-03T10:20:00.000Z",
+      "updatedAt": "2025-01-03T10:20:00.000Z",
+      "category_id": "cat_cln_makeup_005",
+      "brand_id": "brand_cos_002",
+      "images": [
+        {
+          "image_url": "https://res.cloudinary.com/devm-cloud-server/image/upload/f_auto/q_auto/facial-mask_ge39xd?_a=BAMAAAfm0",
+          "is_primary": true
+        }
+      ],
+      "store_stocks": [
+        { "store_id": "cln2g31d4000008jz072lb09k", "quantity": 50 }
+      ]
+    },
+    {
+      "id": 18,
+      "product_id": "prod_cln_018",
+      "name": "Cuticle Oil",
+      "sku": "CO-018",
+      "description": "Nourishing oil for healthy nails.",
+      "cost_price": "1.20",
+      "selling_price": "3.50",
+      "quantity_in_stock": 130,
+      "unit": "pcs",
+      "status": "active",
+      "createdAt": "2025-01-03T10:25:00.000Z",
+      "updatedAt": "2025-01-03T10:25:00.000Z",
+      "category_id": "cat_cln_nail_010",
+      "brand_id": "brand_cos_003",
+      "images": [
+        {
+          "image_url": "https://res.cloudinary.com/devm-cloud-server/image/upload/f_auto/q_auto/luxury-cream-product_ksezrw?_a=BAMAAAfm0",
+          "is_primary": true
+        }
+      ],
+      "store_stocks": [
+        { "store_id": "cln2g31d4000008jz072lb09k", "quantity": 130 }
+      ]
+    },
+    {
+      "id": 19,
+      "product_id": "prod_cln_019",
+      "name": "Beard Oil",
+      "sku": "BO-019",
+      "description": "Lightweight beard oil with natural oils.",
+      "cost_price": "2.20",
+      "selling_price": "6.00",
+      "quantity_in_stock": 48,
+      "unit": "pcs",
+      "status": "active",
+      "createdAt": "2025-01-03T10:30:00.000Z",
+      "updatedAt": "2025-01-03T10:30:00.000Z",
+      "category_id": "cat_cln_men_care_011",
+      "brand_id": "brand_cos_003",
+      "images": [
+        {
+          "image_url": "https://res.cloudinary.com/devm-cloud-server/image/upload/f_auto/q_auto/shampoo-bottle_pbodr8?_a=BAMAAAfm0",
+          "is_primary": true
+        }
+      ],
+      "store_stocks": [
+        { "store_id": "cln2g31d4000008jz072lb09k", "quantity": 48 }
+      ]
+    },
+    {
+      "id": 20,
+      "product_id": "prod_cln_020",
+      "name": "Bright Eyes Cream",
+      "sku": "BE-020",
+      "description": "Eye cream for puffiness and dark circles.",
+      "cost_price": "5.50",
+      "selling_price": "14.00",
+      "quantity_in_stock": 28,
+      "unit": "pcs",
+      "status": "active",
+      "createdAt": "2025-01-03T10:35:00.000Z",
+      "updatedAt": "2025-01-03T10:35:00.000Z",
+      "category_id": "cat_cln_face_001",
+      "brand_id": "brand_cos_001",
+      "images": [
+        {
+          "image_url": "https://res.cloudinary.com/devm-cloud-server/image/upload/f_auto/q_auto/body-lotion_y9pioh?_a=BAMAAAfm0",
+          "is_primary": true
+        }
+      ],
+      "store_stocks": [
+        { "store_id": "cln2g31d4000008jz072lb09k", "quantity": 28 }
+      ]
+    }
+  ]
+}

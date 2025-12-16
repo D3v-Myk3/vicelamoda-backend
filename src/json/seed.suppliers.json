@@ -1,0 +1,59 @@
+{
+  "suppliers": [
+    {
+      "id": 1,
+      "supplier_id": "sup_cln_001",
+      "name": "Lumiere Beauty Supplies",
+      "contact_name": "Amina Bello",
+      "phone": "+2348011110001",
+      "email": "amina@lumiere.example",
+      "address": "12 Beauty Lane, Lagos",
+      "createdAt": "2025-01-02T08:00:00.000Z",
+      "updatedAt": "2025-01-02T08:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "supplier_id": "sup_cln_002",
+      "name": "GlowTrade Ltd",
+      "contact_name": "Tunde Akintola",
+      "phone": "+2348011110002",
+      "email": "tunde@glowtrade.example",
+      "address": "45 Market St, Ikeja",
+      "createdAt": "2025-01-02T08:00:00.000Z",
+      "updatedAt": "2025-01-02T08:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "supplier_id": "sup_cln_003",
+      "name": "PureSkin Distributors",
+      "contact_name": "Chinwe Okoro",
+      "phone": "+2348011110003",
+      "email": "chinwe@pureskin.example",
+      "address": "78 Wellness Ave, Abuja",
+      "createdAt": "2025-01-02T08:00:00.000Z",
+      "updatedAt": "2025-01-02T08:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "supplier_id": "sup_cln_004",
+      "name": "Hairista Imports",
+      "contact_name": "Samuel Mensah",
+      "phone": "+2348011110004",
+      "email": "samuel@hairista.example",
+      "address": "2 Strand Road, Port Harcourt",
+      "createdAt": "2025-01-02T08:00:00.000Z",
+      "updatedAt": "2025-01-02T08:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "supplier_id": "sup_cln_005",
+      "name": "Fragrance House",
+      "contact_name": "Olivia Martins",
+      "phone": "+2348011110005",
+      "email": "olivia@fragrance.example",
+      "address": "10 Aroma Blvd, Lagos",
+      "createdAt": "2025-01-02T08:00:00.000Z",
+      "updatedAt": "2025-01-02T08:00:00.000Z"
+    }
+  ]
+}

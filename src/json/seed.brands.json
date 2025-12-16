@@ -1,0 +1,22 @@
+{
+  "brands": [
+    {
+      "brand_id": "brand_cos_001",
+      "name": "Chava Organics",
+      "abbreviation": "CHAVAO",
+      "description": "Natural and organic beauty products"
+    },
+    {
+      "brand_id": "brand_cos_002",
+      "name": "PureGlow",
+      "abbreviation": "PGLOW",
+      "description": "Skincare and cosmetics"
+    },
+    {
+      "brand_id": "brand_cos_003",
+      "name": "Dermaluxe",
+      "abbreviation": "DERM",
+      "description": "Dermatologist-formulated products"
+    }
+  ]
+}

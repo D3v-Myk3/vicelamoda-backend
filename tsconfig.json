@@ -1,0 +1,44 @@
+{
+  "compilerOptions": {
+    /* Basic */
+    "target": "ES2022", // Modern Node 24+ features
+    "module": "NodeNext", // Use native ESM modules
+    // "moduleResolution": "bundler", // Node-style module resolution
+    "rootDir": "src", // Source files location
+    "outDir": "dist", // Build output
+    "esModuleInterop": true, // Allow default imports from CommonJS
+    "allowSyntheticDefaultImports": true, // Needed for some imports
+    "resolveJsonModule": true, // Import JSON modules directly
+    "strict": true, // Enable strict type checking
+    "forceConsistentCasingInFileNames": true,
+    // "allowImportingTsExtensions": true,
+    "skipLibCheck": true, // Faster build, skip type checks on node_modules
+
+    /* Modern JS features */
+    "experimentalDecorators": true, // For decorators if needed (NestJS / DI)
+    "emitDecoratorMetadata": true, // Required if using decorators
+    "useDefineForClassFields": true, // Modern class fields behavior
+
+    /* Source maps and debugging */
+    "sourceMap": true, // Useful for debugging in Node
+    "inlineSources": true,
+
+    "typeRoots": ["./node_modules/@types", "./src/types", "./types"],
+    "types": ["node"],
+    // "ignoreDeprecations": "6.0",
+
+    "noImplicitAny": true,
+    "strictFunctionTypes": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "allowUnusedLabels": true,
+    "allowUnreachableCode": true,
+
+    /* Other useful options */
+    "incremental": true, // Faster rebuilds
+    "tsBuildInfoFile": ".tsbuildinfo"
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
+}

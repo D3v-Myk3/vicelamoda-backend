@@ -1,0 +1,92 @@
+{
+  "categories": [
+    {
+      "category_id": "cat_cln_face_001",
+      "abbreviation": "FACE",
+      "name": "Face Creams",
+      "description": "Moisturizers, night creams and anti-aging face creams.",
+      "createdAt": "2025-01-01T09:00:00.000Z",
+      "updatedAt": "2025-01-01T09:00:00.000Z"
+    },
+    {
+      "category_id": "cat_cln_body_002",
+      "abbreviation": "BODY",
+      "name": "Body Lotions",
+      "description": "Hydrating body lotions and creams for daily use.",
+      "createdAt": "2025-01-01T09:00:00.000Z",
+      "updatedAt": "2025-01-01T09:00:00.000Z"
+    },
+    {
+      "category_id": "cat_cln_sunscreen_003",
+      "abbreviation": "SUN",
+      "name": "Sunscreens",
+      "description": "SPF lotions, gels and sprays for sun protection.",
+      "createdAt": "2025-01-01T09:00:00.000Z",
+      "updatedAt": "2025-01-01T09:00:00.000Z"
+    },
+    {
+      "category_id": "cat_cln_serum_004",
+      "abbreviation": "SERUM",
+      "name": "Serums & Treatments",
+      "description": "Concentrated serums for hydration, brightening and anti-aging.",
+      "createdAt": "2025-01-01T09:00:00.000Z",
+      "updatedAt": "2025-01-01T09:00:00.000Z"
+    },
+    {
+      "category_id": "cat_cln_makeup_005",
+      "abbreviation": "MAKEUP",
+      "name": "Makeup",
+      "description": "Foundations, primers, powders, and color cosmetics.",
+      "createdAt": "2025-01-01T09:00:00.000Z",
+      "updatedAt": "2025-01-01T09:00:00.000Z"
+    },
+    {
+      "category_id": "cat_cln_cleanser_006",
+      "abbreviation": "CLEAN",
+      "name": "Cleansers",
+      "description": "Face washes, micellar waters and cleansing oils.",
+      "createdAt": "2025-01-01T09:00:00.000Z",
+      "updatedAt": "2025-01-01T09:00:00.000Z"
+    },
+    {
+      "category_id": "cat_cln_toner_007",
+      "abbreviation": "TONER",
+      "name": "Toners & Mists",
+      "description": "Hydrating and balancing toners, facial mists.",
+      "createdAt": "2025-01-01T09:00:00.000Z",
+      "updatedAt": "2025-01-01T09:00:00.000Z"
+    },
+    {
+      "category_id": "cat_cln_hair_008",
+      "abbreviation": "HAIR",
+      "name": "Hair Care",
+      "description": "Shampoos, conditioners, masks and styling products.",
+      "createdAt": "2025-01-01T09:00:00.000Z",
+      "updatedAt": "2025-01-01T09:00:00.000Z"
+    },
+    {
+      "category_id": "cat_cln_fragrance_009",
+      "abbreviation": "FRAG",
+      "name": "Fragrances",
+      "description": "Perfumes, body sprays and eau de toilette.",
+      "createdAt": "2025-01-01T09:00:00.000Z",
+      "updatedAt": "2025-01-01T09:00:00.000Z"
+    },
+    {
+      "category_id": "cat_cln_nail_010",
+      "abbreviation": "NAIL",
+      "name": "Nail Care",
+      "description": "Nail polishes, removers and treatment products.",
+      "createdAt": "2025-01-01T09:00:00.000Z",
+      "updatedAt": "2025-01-01T09:00:00.000Z"
+    },
+    {
+      "category_id": "cat_cln_men_care_011",
+      "abbreviation": "MEN",
+      "name": "Men's Grooming",
+      "description": "Skincare and grooming products tailored for men.",
+      "createdAt": "2025-01-01T09:00:00.000Z",
+      "updatedAt": "2025-01-01T09:00:00.000Z"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "id": 1,
+  "store_id": "cln2g31d4000008jz072lb09k",
+  "name": "Acme Corp Retail",
+  "code": "ACME-001",
+  "address": "123 Main St, Anytown, USA",
+  "phone": "09118093115",
+  "createdAt": "2024-01-01T10:00:00.000Z",
+  "updatedAt": "2024-01-02T14:30:00.000Z",
+  "manager_id": "usr_234567890123456789012345"
+}
