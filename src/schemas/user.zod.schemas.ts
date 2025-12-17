@@ -16,3 +16,14 @@ export const createUserZodSchema = z.strictObject({
 
 // ✅ Infer type from Zod schema
 export type CreateUserFormType = z.infer<typeof createUserZodSchema>;
+
+// ✅ User profile update schema
+export const updateUserProfileZodSchema = z.strictObject({
+  fullname: z.string().min(2, "Name is too short"),
+  phone: z.string().min(2, "Phone is too short"),
+});
+
+// ✅ Infer type from Zod schema
+export type UpdateUserProfileFormType = z.infer<
+  typeof updateUserProfileZodSchema
+>;

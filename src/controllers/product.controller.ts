@@ -110,6 +110,7 @@ export const fetchProductsController = async (
       ip: req.ip,
     });
     const params = req.query as FetchProductsType;
+    console.log("params as controller", params);
     const { admin_data, manager_data } = res.locals;
 
     const response = await fetchProductsService(params, {
