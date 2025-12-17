@@ -5,9 +5,10 @@ import { rateLimiterMiddleware } from "../middlewares/DDos.middlewares";
 import { CustomResponse } from "../types/general.types";
 import accessRoutes from "./access.routes/access.index.routes";
 import adminRoutes from "./admin.routes/admin.index.routes";
+import newsletterRoutes from "./newsletter.routes";
+import productRoutes from "./product.routes";
 import searchRoutes from "./search.routes";
 import userRoutes from "./user.routes/user.index.routes";
-import productRoutes from "./product.routes";
 
 const router = Router();
 
@@ -34,6 +35,7 @@ router.use("/products", productRoutes);
 router.use("/search", searchRoutes);
 // router.use("/sales", salesRoutes);
 router.use("/admin", adminRoutes);
+router.use("/newsletter", newsletterRoutes);
 router.use(userRoutes);
 // router.use("/wishlist", wishlistRoutes);
 // router.use("/supplies", supplyRoutes);

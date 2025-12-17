@@ -170,13 +170,13 @@ export const userLoginService: ServiceFunctionParamType<
         status: StatusCodes.BAD_REQUEST,
       });
     }
-    const rest = response as unknown as UserTblType;
+    const { password, ...rest } = response as unknown as UserTblType;
     console.log(rest);
     const user_store = rest.store ? rest.store : undefined;
 
     const verifyPassword = await argon2ComparePassword(
       params.password,
-      rest.password
+      password
     );
 
     if (!verifyPassword) {
