@@ -1,31 +1,15 @@
 import {
   FulfillmentStatus,
   IOrder,
-  PaymentMethod,
   PaymentStatus,
-} from "../models/mongoose";
+} from "../models/mongoose/Order.model";
+import {
+  CreateOrderZodType,
+  FetchOrdersZodType,
+  UpdateOrderFulfillmentZodType,
+} from "../schemas/order.zod.schemas";
 
-export interface CreateOrderRequest {
-  user_id: string;
-  shipping_address: {
-    fullname: string;
-    email: string;
-    phone: string;
-    address_line1: string;
-    address_line2?: string;
-    city: string;
-    state: string;
-    postal_code: string;
-    country: string;
-  };
-  items: Array<{
-    product_id: string;
-    quantity: number;
-    variant_sku?: string;
-  }>;
-  payment_method: PaymentMethod;
-  promo_code?: string;
-}
+export type CreateOrderRequest = CreateOrderZodType;
 
 export interface CreateOrderResponse {
   order_id: string;
@@ -35,21 +19,12 @@ export interface CreateOrderResponse {
   createdAt: Date;
 }
 
-export interface FetchOrdersType {
-  order_id?: string;
-  user_id?: string;
-  payment_method?: PaymentMethod;
-  payment_status?: PaymentStatus;
-  fulfillment_status?: FulfillmentStatus;
-  search?: string; // Search by order_id, email, name
-  limit?: number;
-  cursor?: string;
-}
+export type FetchOrdersType = FetchOrdersZodType;
 
-export interface UpdateOrderType {
+export interface UpdateOrderType
+  extends Partial<UpdateOrderFulfillmentZodType> {
   order_id: string;
   payment_status?: PaymentStatus;
-  fulfillment_status?: FulfillmentStatus;
 }
 
 export interface UpdateOrderResponse {

@@ -1,4 +1,5 @@
 import { StatusCodes } from "http-status-codes";
+import mongoose from "mongoose";
 import { logger } from "../configs/logger.configs";
 import { paginationConfig } from "../configs/pagination.config";
 import { defaultError, handleErrors } from "../helpers/error.helpers";
@@ -9,6 +10,7 @@ import {
   PaymentStatus,
 } from "../models/mongoose/Order.model";
 import { ProductModel } from "../models/mongoose/Product.model";
+import { UserModel } from "../models/mongoose/User.model";
 import { CustomError, DefaultErrorReturn } from "../types/error.types";
 import { ServiceFunctionParamType } from "../types/general.types";
 import {
@@ -23,19 +25,42 @@ import {
 export const createOrderService: ServiceFunctionParamType<
   CreateOrderRequest,
   CreateOrderResponse
-> = async (params) => {
+> = async (params, { user_data }) => {
+  console.log(params);
+  console.log(user_data);
+
   const source = "CREATE ORDER SERVICE";
   logger.info("Starting createOrderService", { body: params });
 
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
+    // 1. Validate User
+    const user = await UserModel.findOne({
+      _id: user_data?._id ?? params.user_id,
+    })
+      .session(session)
+      .exec();
+    if (!user) {
+      throw new CustomError({
+        data: null,
+        errorMessage: "User not found. Please log in to place an order.",
+        source,
+        status: StatusCodes.UNAUTHORIZED,
+      });
+    }
+
     let total_amount = 0;
     const orderItems = [];
 
     // Process each item sequentially to handle stock updates correctly
     for (const item of params.items) {
       const product = await ProductModel.findOne({
-        product_id: item.product_id,
-      }).exec();
+        _id: item.product_id,
+      })
+        .session(session)
+        .exec();
 
       if (!product) {
         throw new CustomError({
@@ -51,38 +76,53 @@ export const createOrderService: ServiceFunctionParamType<
       let variant_name = "";
 
       if (item.variant_sku) {
-        // Handle Variant Product
-        const variant = product.variants.find(
-          (v) => v.sku === item.variant_sku
-        );
+        // Handle Hierarchical Variant Product
+        let matchedSize: any = null;
+        let matchedMaterial: any = null;
+        let matchedColor: any = null;
 
-        if (!variant) {
+        for (const size of product.variants) {
+          for (const mat of size.materials) {
+            const color = mat.colors.find(
+              (c: any) => c.sku === item.variant_sku
+            );
+            if (color) {
+              matchedSize = size;
+              matchedMaterial = mat;
+              matchedColor = color;
+              break;
+            }
+          }
+          if (matchedColor) break;
+        }
+
+        if (!matchedColor) {
           throw new CustomError({
             data: null,
-            errorMessage: `Variant ${item.variant_sku} not found for product ${product.name}`,
+            errorMessage: `Color Variant ${item.variant_sku} not found for product ${product.name}`,
             source,
             status: StatusCodes.BAD_REQUEST,
           });
         }
 
-        // Calculate total variant stock across all stores
-        const totalVariantStock = variant.stocks.reduce(
-          (sum, s) => sum + s.stock,
+        // Calculate total stock across ALL stores for this specific color variant
+        const totalVariantStock = matchedColor.stocks.reduce(
+          (sum: number, s: any) => sum + s.stock,
           0
         );
 
         if (totalVariantStock < item.quantity) {
           throw new CustomError({
             data: null,
-            errorMessage: `Insufficient stock for variance ${variant.sku}. Available: ${totalVariantStock}`,
+            errorMessage: `Insufficient stock for ${matchedSize.size} / ${matchedMaterial.name} / ${matchedColor.name}. Available: ${totalVariantStock}`,
             source,
             status: StatusCodes.BAD_REQUEST,
           });
         }
 
-        // Deduct stock from stores (First Available Strategy)
+        // Deduct stock (First Available Strategy)
         let remainingqty = item.quantity;
-        for (const storeStock of variant.stocks) {
+        for (const storeStock of matchedColor.stocks) {
           if (remainingqty <= 0) break;
           if (storeStock.stock > 0) {
             const deduct = Math.min(storeStock.stock, remainingqty);
@@ -91,11 +131,8 @@ export const createOrderService: ServiceFunctionParamType<
           }
         }
 
-        unit_price = variant.price;
-        variant_name = `${product.name} - ${variant.size}`;
-        if (variant.attributes && variant.attributes.length > 0) {
-          variant_name += ` (${variant.attributes.map((a) => `${a.key}: ${a.value}`).join(", ")})`;
-        }
+        unit_price = matchedMaterial.price; // Price from Material level
+        variant_name = `${product.name}${matchedSize.size ? ` - ${matchedSize.size}` : ""}${matchedMaterial.name ? ` / ${matchedMaterial.name}` : ""}${matchedColor.name ? ` / ${matchedColor.name}` : ""}`;
       } else {
         // Handle Standard Product (Non-variant)
         if (product.quantity_in_stock < item.quantity) {
@@ -123,8 +160,8 @@ export const createOrderService: ServiceFunctionParamType<
         line_total,
       });
 
-      // Save the product to persist stock changes and trigger middleware (which recalculates total stock)
-      await product.save();
+      // Save the product within session
+      await product.save({ session });
     }
 
     // Determine payment status based on payment method
@@ -137,16 +174,26 @@ export const createOrderService: ServiceFunctionParamType<
       payment_status = PaymentStatus.PENDING;
     }
 
+    console.log(orderItems);
+
     // Create order
-    const order = await OrderModel.create({
-      user_id: params.user_id,
-      shipping_address: params.shipping_address,
-      items: orderItems,
-      total_amount,
-      payment_method: params.payment_method,
-      payment_status,
-      fulfillment_status: FulfillmentStatus.PENDING,
-    });
+    const [order] = await OrderModel.create(
+      [
+        {
+          user_id: params.user_id,
+          user: user._id,
+          shipping_address: params.shipping_address,
+          items: orderItems,
+          total_amount,
+          payment_method: params.payment_method,
+          payment_status,
+          fulfillment_status: FulfillmentStatus.PENDING,
+        },
+      ],
+      { session }
+    );
+
+    await session.commitTransaction();
 
     return {
       data: {
@@ -164,6 +211,7 @@ export const createOrderService: ServiceFunctionParamType<
       status: StatusCodes.CREATED,
     };
   } catch (error: any) {
+    await session.abortTransaction();
     logger.error(`Error in createOrderService`, {
       source,
       error: error instanceof Error ? error.message : String(error),
@@ -173,6 +221,8 @@ export const createOrderService: ServiceFunctionParamType<
       return handleErrors({ error, source }) as DefaultErrorReturn;
     }
     return defaultError(source, String(error));
+  } finally {
+    session.endSession();
   }
 };
 
@@ -189,7 +239,7 @@ export const fetchOrdersService: ServiceFunctionParamType<
 
     const query: any = {};
 
-    if (params.order_id) query.order_id = params.order_id;
+    if (params.order_id) query._id = params.order_id;
     if (params.user_id) query.user_id = params.user_id;
     if (params.payment_method) query.payment_method = params.payment_method;
     if (params.payment_status) query.payment_status = params.payment_status;
@@ -198,31 +248,49 @@ export const fetchOrdersService: ServiceFunctionParamType<
 
     // Search by order_id, email, or name
     if (params.search) {
+      const searchRegex = { $regex: params.search, $options: "i" };
       query.$or = [
-        { order_id: { $regex: params.search, $options: "i" } },
-        { "shipping_address.email": { $regex: params.search, $options: "i" } },
-        {
-          "shipping_address.fullname": { $regex: params.search, $options: "i" },
-        },
+        { order_id: searchRegex },
+        { "shipping_address.email": searchRegex },
+        { "shipping_address.fullname": searchRegex },
       ];
     }
 
-    // Cursor-based pagination
+    // Cursor-based pagination logic
     if (cursor) {
-      query.$or = query.$or || [];
-      query.$or.push(
-        { createdAt: { $lt: new Date() } },
-        { order_id: { $lt: cursor } }
-      );
+      try {
+        const decodedCursor = JSON.parse(
+          Buffer.from(cursor, "base64").toString("utf-8")
+        );
+        const { c: cDate, p: pId } = decodedCursor;
+
+        if (cDate && pId) {
+          const dateFilter = { createdAt: { $lt: new Date(cDate) } };
+          const idFilter = {
+            createdAt: new Date(cDate),
+            _id: { $lt: pId },
+          };
+
+          const paginationOr = [dateFilter, idFilter];
+
+          if (query.$or) {
+            query.$and = [{ $or: query.$or }, { $or: paginationOr }];
+            delete query.$or;
+          } else {
+            query.$or = paginationOr;
+          }
+        }
+      } catch (e) {
+        logger.warn(`Invalid cursor provided: ${cursor}`, { source });
+      }
     }
 
     let queryBuilder = OrderModel.find(query)
-      .sort({ createdAt: -1, order_id: -1 })
+      .sort({ createdAt: -1, _id: -1 })
       .limit(limit + 1)
       .populate({
-        path: "items.product_id",
-        model: ProductModel,
-        select: "product_id name sku selling_price",
+        path: "items.product",
+        select: "product_id name sku selling_price images",
       });
 
     const result = await queryBuilder.lean().exec();
@@ -230,7 +298,13 @@ export const fetchOrdersService: ServiceFunctionParamType<
     let nextCursor: string | null = null;
     if (result.length > limit) {
       const nextItem = result.pop();
-      nextCursor = nextItem?.order_id ?? null;
+      if (nextItem && nextItem.createdAt && nextItem._id) {
+        const cursorData = {
+          c: new Date(nextItem.createdAt).getTime(),
+          p: nextItem._id.toString(),
+        };
+        nextCursor = Buffer.from(JSON.stringify(cursorData)).toString("base64");
+      }
     }
 
     return {
@@ -266,8 +340,7 @@ export const getOrderDetailsService: ServiceFunctionParamType<
       order_id: params.order_id,
     })
       .populate({
-        path: "items.product_id",
-        model: ProductModel,
+        path: "items.product",
         select: "product_id name sku selling_price images",
       })
       .lean()

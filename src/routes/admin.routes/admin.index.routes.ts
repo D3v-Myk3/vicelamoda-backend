@@ -4,16 +4,17 @@ import { handleValidationErrors } from "../../helpers/error.helpers";
 import { adminAuthMiddleware } from "../../middlewares/auth/admin.auth";
 import adminBrandRoutes from "./admin.brand.routes";
 import adminCategoryRoutes from "./admin.category.routes";
-import adminDashboardRoutes from "./admin.dashboard.routes";
 import adminProductRoutes from "./admin.product.routes";
 // import adminSalesRoutes from "./admin.sales.routes";
+import adminDashboardRoutes from "./admin.dashboard.routes";
 import adminStoreRoutes from "./admin.store.routes";
 import adminSupplyRoutes from "./admin.supply.routes";
+import adminOrderRoutes from "./admin.order.routes";
 
 const adminRoutes = express.Router();
 
 adminRoutes.use(
-  header("x-chv-ad-auth-token")
+  header("x-vcl-ad-auth-token")
     .trim()
     .notEmpty()
     .withMessage("Admin Authorization Token is Required")
@@ -32,5 +33,6 @@ adminRoutes.use("/supplies", adminSupplyRoutes);
 adminRoutes.use("/products", adminProductRoutes);
 adminRoutes.use("/categories", adminCategoryRoutes);
 adminRoutes.use("/dashboard", adminDashboardRoutes);
+adminRoutes.use("/orders", adminOrderRoutes);
 
 export default adminRoutes;

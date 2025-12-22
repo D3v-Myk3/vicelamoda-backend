@@ -33,21 +33,38 @@ error: "Product size is required",
 });
  */
 // Product sizes object
-export const SizePricingSchema = z.object({
+export const ColorVariantSchema = z.object({
+  name: z.string().min(1, "Color name is required"),
+  image_url: z.string().url().optional().nullable(),
+  stocks: z
+    .array(
+      z.object({
+        store_id: z.string().min(1, "Store ID is required"),
+        stock: z.coerce.number().min(0, "Stock cannot be negative"),
+      })
+    )
+    .default([]),
+});
+
+export const MaterialVariantSchema = z.object({
+  name: z.string().min(1, "Material name is required"),
+  price: z.coerce.number().min(0, "Price cannot be negative"),
+  cost_price: z.coerce
+    .number()
+    .min(0, "Cost price cannot be negative")
+    .optional(),
+  colors: z.array(ColorVariantSchema).min(1, "At least one color is required"),
+});
+
+export const SizeVariantSchema = z.object({
   size: z.enum(allowedProductSizeVariation),
-  cost_price: z
-    .union([z.number(), z.string()])
-    .refine((v) => !isNaN(Number(v)), "Cost price must be a valid number")
-    .refine((v) => Number(v) >= 0, "Cost price cannot be negative"),
-  selling_price: z
-    .union([z.number(), z.string()])
-    .refine((v) => !isNaN(Number(v)), "Selling price must be a valid number")
-    .refine((v) => Number(v) >= 0, "Selling price cannot be negative"),
-  attributes: z.array(z.object({ key: z.string(), value: z.string() })),
+  materials: z
+    .array(MaterialVariantSchema)
+    .min(1, "At least one material is required"),
 });
 
 export const ProductSizeSchema = z
-  .array(SizePricingSchema)
+  .array(SizeVariantSchema)
   .min(1, "At least one size must be provided")
   .refine((arr) => new Set(arr.map((i) => i.size)).size === arr.length, {
     message: "Duplicate sizes are not allowed",

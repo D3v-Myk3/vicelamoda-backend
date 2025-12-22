@@ -31,6 +31,7 @@ export const blockIPMiddleware = (
 export const configureCors = () => {
   const allowedOrigins = [
     "http://localhost:8080",
+    "http://192.168.0.5:3000",
     // "https://fjwnqc0d-3000.uks1.devtunnels.ms",
     CLIENT_DOMAIN,
     "https://l3hbgspw-3000.uks1.devtunnels.ms",
