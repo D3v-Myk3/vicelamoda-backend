@@ -10,12 +10,10 @@ let mongooseConnection: Promise<typeof mongoose>;
 
 if (!globalForMongoose.mongoose) {
   mongooseConnection = mongoose.connect(DATABASE_URL, {
-    bufferCommands: false,
+    // bufferCommands: false,
     dbName: DB_NAME,
   }); // Default bufferCommands: true
-  logger.info(
-    `Attempting to connect to DB: ${DATABASE_URL?.replace(/:[^:@]+@/, ":****@")}`
-  );
+  logger.info(`Attempting to connect to DB: ${DB_NAME}`);
   globalForMongoose.mongoose = mongooseConnection;
 } else {
   mongooseConnection = globalForMongoose.mongoose;
