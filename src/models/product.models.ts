@@ -17,13 +17,10 @@ export const fetchProductsModel: ModelFunctionParamType<
 > = async (params) => {
   const source = "GET ALL PRODUCTS MODEL";
   logger.info(`Fetching all products`, { source, params });
-  console.log(params);
 
   // try {
   const limit = Number(params.limit) ?? paginationConfig.defaultLimit;
   const cursor = params.cursor;
-  console.log("limit", limit);
-  console.log("cursor", cursor);
 
   // Build MongoDB query
   const query: any = {};
@@ -119,6 +116,8 @@ export const fetchProductsModel: ModelFunctionParamType<
     }
   }
 
+  console.log("Query: ", query);
+
   let queryBuilder = ProductModel.find(query)
     .populate({
       path: "category_id",
@@ -148,6 +147,8 @@ export const fetchProductsModel: ModelFunctionParamType<
 
   // Images are always included (embedded in product)
   const result = await queryBuilder.lean().exec();
+
+  console.log("Result: ", result);
 
   let nextCursor: string | null = null;
   if (result.length > limit) {

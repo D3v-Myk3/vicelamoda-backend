@@ -9,6 +9,7 @@ import newsletterRoutes from "./newsletter.routes";
 import productRoutes from "./product.routes";
 import searchRoutes from "./search.routes";
 import userRoutes from "./user.routes/user.index.routes";
+import categoryRoutes from "./category.routes";
 
 const router = Router();
 
@@ -29,7 +30,7 @@ router.use((req, res, next) => {
 
 router.use("/access", accessRoutes);
 router.use("/products", productRoutes);
-// router.use("/categories", categoryRoutes);
+router.use("/categories", categoryRoutes);
 // router.use("/brands", brandRoutes);
 // router.use("/orders", orderRoutes);
 router.use("/search", searchRoutes);

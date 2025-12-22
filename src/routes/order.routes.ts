@@ -3,26 +3,72 @@ import {
   createOrderController,
   fetchOrdersController,
   getOrderDetailsController,
+  markBankTransferAsPaidController,
+  updateOrderFulfillmentController,
 } from "../controllers/order.controller";
-import { userAuthMiddleware } from "../middlewares/auth/user.auth";
+import { Zod_ValidationMiddleware } from "../middlewares/validations/zod.validation.middleware";
+import {
+  createOrderZodSchema,
+  fetchOrdersZodSchema,
+  orderIdParamZodSchema,
+  updateOrderFulfillmentZodSchema,
+} from "../schemas/order.zod.schemas";
 
-const router = Router();
+/* ================= USER ORDER ROUTES ================= */
+export const orderRoutes = Router();
 
-// User routes
-router.post("/", userAuthMiddleware, createOrderController);
-router.get("/", userAuthMiddleware, fetchOrdersController);
-router.get("/:order_id", userAuthMiddleware, getOrderDetailsController);
+orderRoutes.post(
+  "/",
+  Zod_ValidationMiddleware({
+    schema: createOrderZodSchema,
+    source: "Create Order",
+  }),
+  createOrderController
+);
+orderRoutes.get(
+  "/",
+  Zod_ValidationMiddleware({
+    schema: fetchOrdersZodSchema,
+    source: "Fetch Orders",
+    path: "query",
+  }),
+  fetchOrdersController
+);
+orderRoutes.get(
+  "/:order_id",
+  Zod_ValidationMiddleware({
+    schema: orderIdParamZodSchema,
+    source: "Get Order Details",
+    path: "params",
+  }),
+  getOrderDetailsController
+);
 
-/* // Admin routes
-router.patch(
+/* ================= ADMIN ORDER ROUTES ================= */
+export const adminOrderRoutes = Router();
+
+adminOrderRoutes.patch(
   "/:order_id/fulfillment",
-  adminAuthMiddleware,
+  // adminAuthMiddleware,
+  Zod_ValidationMiddleware({
+    schema: orderIdParamZodSchema,
+    source: "Update Order Fulfillment (Params)",
+    path: "params",
+  }),
+  Zod_ValidationMiddleware({
+    schema: updateOrderFulfillmentZodSchema,
+    source: "Update Order Fulfillment (Body)",
+  }),
   updateOrderFulfillmentController
 );
-router.patch(
+
+adminOrderRoutes.patch(
   "/:order_id/mark-paid",
-  adminAuthMiddleware,
+  // adminAuthMiddleware,
+  Zod_ValidationMiddleware({
+    schema: orderIdParamZodSchema,
+    source: "Mark Bank Transfer as Paid (Params)",
+    path: "params",
+  }),
   markBankTransferAsPaidController
 );
- */
-export default router;

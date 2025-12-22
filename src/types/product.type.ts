@@ -99,12 +99,22 @@ export type ProductImageUploadType = {
   is_primary?: boolean;
 };
 
-export type createProductVariant = {
-  size: ProductSize;
+export type CreateColorVariant = {
+  name: string;
+  image_url?: string;
+  stocks: { store_id: string; stock: number }[];
+};
+
+export type CreateMaterialVariant = {
+  name: string;
   price: number;
-  stock: { store_id: string; quantity: number }[];
-  attributes: { key: string; value: string }[];
-  sku: string;
+  cost_price?: number;
+  colors: CreateColorVariant[];
+};
+
+export type CreateSizeVariant = {
+  size: ProductSize;
+  materials: CreateMaterialVariant[];
 };
 
 export type CreateProductType = CreateProductFormType & {
@@ -118,7 +128,7 @@ export type CreateProductType = CreateProductFormType & {
   images?: ProductImageUploadType[];
   size?: ProductSize;
   has_variants?: boolean;
-  variants: createProductVariant[];
+  variants: CreateSizeVariant[];
   variation_options?: IVariationOption[];
   status?: "active" | "inactive";
 };

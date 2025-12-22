@@ -4,6 +4,7 @@ import { z } from "zod";
 export const userRegistrationZodSchema = z.strictObject({
   fullname: z.string().min(2, "Name is too short"),
   email: z.string().email("Invalid email address"),
+  phone: z.string().min(10, "Phone number is too short"),
   store_id: z.string().optional(),
   password: z
     .string()

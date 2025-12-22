@@ -83,11 +83,13 @@ export const createSupplyService: ServiceFunctionParamType<
 
         // If variant_sku is provided, validate and get variant info
         if (item.variant_sku) {
-          const product = await ProductModel.findOne<ProductTblType>({
+          const response = await ProductModel.findOne<any>({
             product_id: item.product_id,
           })
             .lean()
             .exec();
+
+          const product = response as unknown as ProductTblType;
 
           if (!product) {
             throw new CustomError({
@@ -98,28 +100,39 @@ export const createSupplyService: ServiceFunctionParamType<
             });
           }
 
-          // product_data.push(product as unknown as ProductTblType);
+          // Find the variant coordinate by SKU (Color level)
+          let foundSize: any = null;
+          let foundMaterial: any = null;
+          let foundColor: any = null;
 
-          // Find the variant by SKU
-          const variant = product.variants?.find(
-            (v) => v.sku === item.variant_sku
-          );
+          if (product.has_variants) {
+            for (const size of product.variants) {
+              for (const mat of size.materials) {
+                const color = mat.colors.find(
+                  (c: any) => c.sku === item.variant_sku
+                );
+                if (color) {
+                  foundSize = size;
+                  foundMaterial = mat;
+                  foundColor = color;
+                  break;
+                }
+              }
+              if (foundColor) break;
+            }
+          }
 
-          if (!variant) {
+          if (!foundColor) {
             throw new CustomError({
               data: null,
-              errorMessage: `Variant with SKU ${item.variant_sku} not found for product ${item.product_id}`,
+              errorMessage: `Color Variant with SKU ${item.variant_sku} not found for product ${item.product_id}`,
               source,
               status: StatusCodes.BAD_REQUEST,
             });
           }
 
-          variant_sku = variant.sku;
-          variant_name = `${product.name} - ${variant.size}${
-            variant.attributes?.length
-              ? ` (${variant.attributes.map((a) => a.value).join(", ")})`
-              : ""
-          }`;
+          variant_sku = foundColor.sku;
+          variant_name = `${product.name} - ${foundSize.size} / ${foundMaterial.name} / ${foundColor.name}`;
         }
 
         return {
@@ -183,37 +196,44 @@ export const createSupplyService: ServiceFunctionParamType<
       }
 
       if (item.variant_sku && product.has_variants) {
-        // Update variant stock
-        const variantIndex = product.variants.findIndex(
-          (v) => v.sku === item.variant_sku
-        );
+        // Update variant stock (Size -> Material -> Color)
+        let matchedColor: any = null;
 
-        if (variantIndex === -1) {
+        for (const size of product.variants) {
+          for (const mat of size.materials) {
+            const color = mat.colors.find(
+              (c: any) => c.sku === item.variant_sku
+            );
+            if (color) {
+              matchedColor = color;
+              break;
+            }
+          }
+          if (matchedColor) break;
+        }
+
+        if (!matchedColor) {
           throw new CustomError({
             data: null,
-            errorMessage: `Variant with SKU ${item.variant_sku} not found`,
+            errorMessage: `Color Variant with SKU ${item.variant_sku} not found during stock update`,
             source,
             status: StatusCodes.BAD_REQUEST,
           });
         }
 
-        const variant = product.variants[variantIndex];
-        const storeStockIndex = variant.stocks.findIndex(
-          (s) => s.store_id === params.store_id
+        const storeStockIndex = matchedColor.stocks.findIndex(
+          (s: any) => s.store_id === supply_store_id
         );
 
         if (storeStockIndex >= 0) {
-          // Update existing store stock
-          variant.stocks[storeStockIndex].stock += item.quantity;
+          matchedColor.stocks[storeStockIndex].stock += item.quantity;
         } else {
-          // Add new store stock entry
-          variant.stocks.push({
-            store_id: params.store_id,
+          matchedColor.stocks.push({
+            store_id: supply_store_id as string,
             stock: item.quantity,
           });
         }
 
-        // Mark variant as modified
         product.markModified("variants");
         await product.save();
       } else {

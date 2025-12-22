@@ -1,0 +1,150 @@
+{
+  "products": [
+    {
+      "product_id": "prod_cloth_001",
+      "name": "Luxury Silk Polo",
+      "sku": "LSP-001",
+      "description": "Premium polo shirt made from the finest silk blends.",
+      "cost_price": 25000.0,
+      "selling_price": 65000.0,
+      "quantity_in_stock": 0,
+      "unit": "pcs",
+      "status": "active",
+      "category_id": "cat_cln_face_001",
+      "brand_id": "brand_cos_001",
+      "images": [
+        {
+          "image_url": "https://res.cloudinary.com/devm-cloud-server/image/upload/v1765761080/V-Jacket_h1xzi3.jpg",
+          "is_primary": true
+        }
+      ],
+      "variants": [
+        {
+          "size": "MEDIUM",
+          "materials": [
+            {
+              "name": "Pure Silk",
+              "price": 85000.0,
+              "colors": [
+                {
+                  "name": "Royal Blue",
+                  "stocks": [
+                    { "store_id": "cln2g31d4000008jz072lb09k", "stock": 2005 }
+                  ]
+                },
+                {
+                  "name": "Emerald Green",
+                  "stocks": [
+                    { "store_id": "cln2g31d4000008jz072lb09k", "stock": 2000 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Silk Blend",
+              "price": 65000.0,
+              "colors": [
+                {
+                  "name": "Classic White",
+                  "stocks": [
+                    { "store_id": "cln2g31d4000008jz072lb09k", "stock": 2005 }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "size": "LARGE",
+          "materials": [
+            {
+              "name": "Pure Silk",
+              "price": 90000.0,
+              "colors": [
+                {
+                  "name": "Royal Blue",
+                  "stocks": [
+                    { "store_id": "cln2g31d4000008jz072lb09k", "stock": 2002 }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "product_id": "prod_cloth_002",
+      "name": "Italian Leather Jacket",
+      "sku": "ILJ-002",
+      "description": "Handcrafted Italian leather jacket with premium lining.",
+      "cost_price": 120000.0,
+      "selling_price": 299000.0,
+      "quantity_in_stock": 0,
+      "unit": "pcs",
+      "status": "active",
+      "category_id": "cat_cln_body_002",
+      "brand_id": "brand_cos_002",
+      "images": [
+        {
+          "image_url": "https://res.cloudinary.com/devm-cloud-server/image/upload/v1765761080/V-Jacket_h1xzi3.jpg",
+          "is_primary": true
+        }
+      ],
+      "variants": [
+        {
+          "size": "SMALL",
+          "materials": [
+            {
+              "name": "Nappa Leather",
+              "price": 299000.0,
+              "colors": [
+                {
+                  "name": "Midnight Black",
+                  "stocks": [
+                    { "store_id": "cln2g31d4000008jz072lb09k", "stock": 200 }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "size": "MEDIUM",
+          "materials": [
+            {
+              "name": "Nappa Leather",
+              "price": 310000.0,
+              "colors": [
+                {
+                  "name": "Midnight Black",
+                  "stocks": [
+                    { "store_id": "cln2g31d4000008jz072lb09k", "stock": 200 }
+                  ]
+                },
+                {
+                  "name": "Dark Brown",
+                  "stocks": [
+                    { "store_id": "cln2g31d4000008jz072lb09k", "stock": 200 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Suede",
+              "price": 275000.0,
+              "colors": [
+                {
+                  "name": "Tan",
+                  "stocks": [
+                    { "store_id": "cln2g31d4000008jz072lb09k", "stock": 2000 }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

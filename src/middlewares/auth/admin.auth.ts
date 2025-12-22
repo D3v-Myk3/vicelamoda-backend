@@ -8,6 +8,7 @@ import { greenAnsiColor, logger } from "../../configs/logger.configs";
 import { matchedHeadersDataOption } from "../../configs/sanitizer.configs";
 import { defaultError, handleErrors } from "../../helpers/error.helpers";
 import { isPersonnelAnAdminHelper } from "../../helpers/role.helpers";
+import { UserModel } from "../../models/mongoose";
 import { fetchUsersModel } from "../../models/user.models";
 import { CustomError, DefaultErrorReturn } from "../../types/error.types";
 import { CustomResponse, JSONResponseType } from "../../types/general.types";
@@ -22,7 +23,7 @@ export const adminAuthMiddleware = async (
   const source = "ADMIN AUTH CONTROLLER";
   try {
     const matched_data = matchedData(req, matchedHeadersDataOption);
-    const token = matched_data["x-chv-ad-auth-token"] as string;
+    const token = matched_data["x-vcl-ad-auth-token"] as string;
     console.log("Token: ", token);
 
     if (!token) {
@@ -53,7 +54,7 @@ export const adminAuthMiddleware = async (
       user_id,
     });
 
-    const response = await fetchUsersModel(
+    /* const response = await fetchUsersModel(
       {
         user_id,
         constraints: { store: true },
@@ -74,7 +75,10 @@ export const adminAuthMiddleware = async (
       throw new CustomError(response as DefaultErrorReturn);
     }
 
-    const [admin] = response?.data as UserTblType[];
+    const [admin] = response?.data as UserTblType[]; */
+
+    const response = await UserModel.findById(user_id).lean().exec();
+    const admin = response as unknown as UserTblType;
 
     if (!admin) {
       logger.warn(`Admin not registered`, {

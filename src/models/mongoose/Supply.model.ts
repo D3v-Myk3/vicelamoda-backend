@@ -8,7 +8,7 @@ export enum ChangeType {
 
 export interface ISuppliedProduct {
   public_id: string;
-  product_id: string;
+  product_id: mongoose.Types.ObjectId;
   quantity: number;
   variant_sku?: string;
   variant_name?: string;
@@ -40,7 +40,8 @@ const SuppliedProductSchema = new Schema<ISuppliedProduct>(
         `spp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     },
     product_id: {
-      type: String,
+      type: Schema.Types.ObjectId,
+      ref: "Product",
       required: true,
       index: true,
     },
