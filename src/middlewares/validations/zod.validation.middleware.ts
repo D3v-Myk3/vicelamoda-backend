@@ -43,6 +43,8 @@ export const Zod_ValidationMiddleware =
 
       if (shouldParse) target = JSON.parse(target);
 
+      console.log("Target: ", target);
+
       // Validate data using Zod
       const parsed = schema.safeParse(target);
       if (!parsed.success) {

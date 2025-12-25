@@ -42,7 +42,7 @@ const customJsonFormat = winston.format.combine(
       timestamp: metadata.timestamp,
       level: info.level,
       message: info.message as string,
-      service: "school-solution-server",
+      service: "vicelamoda-server",
     };
   })(),
   winston.format.json({ space: 2 })

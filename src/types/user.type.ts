@@ -25,6 +25,11 @@ export type CreateUserType = CreateUserFormType & {};
 
 export type UpdateUserProfileType = UpdateUserProfileFormType & {};
 
+export type UpdatePasswordType = {
+  old_password: string;
+  new_password: string;
+};
+
 export type UserTblType = IUser & {
   _id: string;
   store?: string | StoreTblType;

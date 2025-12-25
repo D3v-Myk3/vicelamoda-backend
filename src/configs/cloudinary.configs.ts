@@ -9,8 +9,8 @@ cloudinary.config({
 
 export const cloudinaryConfig = {
   product_folder: "vicelamoda/uploads/products",
-  UPLOAD_TIMEOUT_MS: 40_000,
-  DELETE_TIMEOUT_MS: 10_000,
+  UPLOAD_TIMEOUT_MS: 5000000,
+  DELETE_TIMEOUT_MS: 5000000,
 };
 
 export default cloudinary;

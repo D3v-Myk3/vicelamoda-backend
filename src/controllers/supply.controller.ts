@@ -1,10 +1,15 @@
 import { logger } from "../configs/logger.configs";
 import { defaultError, handleErrors } from "../helpers/error.helpers";
-import { CreateSupplyFormType } from "../schemas/supply.zod.schemas";
+import {
+  CreateSupplyFormType,
+  UpdateSupplyFormType,
+} from "../schemas/supply.zod.schemas";
 import {
   createSupplyService,
+  deleteSupplyService,
   fetchSingleSupplyService,
   fetchSuppliesService,
+  updateSupplyService,
 } from "../services/supply.service";
 import {
   CustomRequest,
@@ -164,6 +169,70 @@ export const fetchSingleSupplyController = async (
         error: String(error),
       });
       defaultError(source, error as string);
+    }
+  }
+};
+
+export const updateSupplyController = async (
+  req: CustomRequest<{ supply_id: string }, unknown, UpdateSupplyFormType>,
+  res: CustomResponse<SupplyTblType>
+): Promise<void> => {
+  const source = "UPDATE SUPPLY CONTROLLER";
+  try {
+    logger.info("Starting updateSupplyController", {
+      params: req.params,
+      body: req.body,
+    });
+    const { supply_id } = req.params;
+    const update_data = req.body;
+    const { admin_data, manager_data } = res.locals;
+
+    const response = await updateSupplyService(
+      { supply_id, update_data },
+      { admin_data, manager_data }
+    );
+
+    if (response.errorMessage || response.status >= 300) {
+      handleErrors({ response: response as any, res: res as any });
+      return;
+    }
+
+    const resData = response.data as JSONResponseType<SupplyTblType>;
+    res.status(response.status).json(resData);
+  } catch (error) {
+    handleErrors({ res: res as any, error: error as any, source });
+  }
+};
+
+export const deleteSupplyController = async (
+  req: CustomRequest<{ supply_id: string }, unknown, unknown>,
+  res: CustomResponse<null>
+): Promise<void> => {
+  const source = "DELETE SUPPLY CONTROLLER";
+  try {
+    logger.info("Starting deleteSupplyController", {
+      params: req.params,
+    });
+    const { supply_id } = req.params;
+    const { admin_data, manager_data } = res.locals;
+
+    const response = await deleteSupplyService(supply_id, {
+      admin_data,
+      manager_data,
+    });
+
+    if (response.errorMessage || response.status >= 300) {
+      handleErrors({ response, res });
+      return;
+    }
+
+    const resData = response.data as JSONResponseType<null>;
+    res.status(response.status).json(resData);
+  } catch (error) {
+    if (error instanceof Error) {
+      handleErrors({ res, error, source });
+    } else {
+      handleErrors({ res, error: new Error(String(error)), source });
     }
   }
 };

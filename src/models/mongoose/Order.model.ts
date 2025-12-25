@@ -13,7 +13,7 @@ export enum PaymentStatus {
   COMPLETED = "COMPLETED",
   PENDING = "PENDING",
   FAILED = "FAILED",
-  AWAITING_BANK_TRANSFER = "awaiting_bank_transfer",
+  AWAITING_BANK_TRANSFER = "AWAITING_BANK_TRANSFER",
 }
 
 export enum FulfillmentStatus {

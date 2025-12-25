@@ -198,7 +198,7 @@ export const fetchSuppliesModel: ModelFunctionParamType<
   // Build MongoDB query
   const query: any = {};
 
-  if (params.supply_id) query.supply_id = params.supply_id;
+  if (params.supply_id) query._id = params.supply_id;
   if (params.store_id) query.store_id = params.store_id;
   if (params.recorded_by) query.recorded_by = params.recorded_by;
 
@@ -246,6 +246,18 @@ export const fetchSuppliesModel: ModelFunctionParamType<
   const result = await SupplyModel.find(query)
     .sort({ date_supplied: -1, supply_id: -1 })
     .limit(limit + 1)
+    .populate({
+      path: "store",
+      select: "store_id name",
+    })
+    .populate({
+      path: "recorder",
+      select: "fullname email user_id",
+    })
+    .populate({
+      path: "products.product_id",
+      select: "product_id name sku selling_price",
+    })
     .lean()
     .exec();
 
@@ -292,6 +304,15 @@ export const fetchSingleSupplyModel: ModelFunctionParamType<
   const result = await SupplyModel.findOne({
     supply_id: params.supply_id,
   })
+    .populate("store")
+    .populate({
+      path: "recorder",
+      select: "name email user_id",
+    })
+    .populate({
+      path: "products.product_id",
+      select: "product_id name sku selling_price",
+    })
     .lean()
     .exec();
 

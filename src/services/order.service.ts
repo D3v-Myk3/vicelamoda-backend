@@ -291,6 +291,10 @@ export const fetchOrdersService: ServiceFunctionParamType<
       .populate({
         path: "items.product",
         select: "product_id name sku selling_price images",
+      })
+      .populate({
+        path: "user",
+        select: "fullname email user_id",
       });
 
     const result = await queryBuilder.lean().exec();
@@ -381,7 +385,7 @@ export const updateOrderFulfillmentService: ServiceFunctionParamType<
 
   try {
     const order = await OrderModel.findOneAndUpdate(
-      { order_id: params.order_id },
+      { _id: params.order_id },
       { $set: { fulfillment_status: params.fulfillment_status } },
       { new: true }
     )

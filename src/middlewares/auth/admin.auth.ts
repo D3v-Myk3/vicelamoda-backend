@@ -192,7 +192,7 @@ export const managerAuthMiddleware = async (
   const source = "MANAGER AUTH CONTROLLER";
   try {
     const matched_data = matchedData(req, matchedHeadersDataOption);
-    const token = matched_data["chv-mng-auth-token"] as string;
+    const token = matched_data["vcl-mng-auth-token"] as string;
 
     if (!token) {
       logger.warn(

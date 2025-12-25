@@ -1,5 +1,6 @@
 import {
   IProduct,
+  IStoreStock,
   IVariationOption,
   ProductSize,
 } from "../models/mongoose/Product.model";
@@ -102,7 +103,7 @@ export type ProductImageUploadType = {
 export type CreateColorVariant = {
   name: string;
   image_url?: string;
-  stocks: { store_id: string; stock: number }[];
+  stocks: IStoreStock[];
 };
 
 export type CreateMaterialVariant = {
@@ -121,9 +122,10 @@ export type CreateProductType = CreateProductFormType & {
   quantity_in_stock?: number | string;
   unit?: "pcs" | "ml" | "ltr" | "g" | "kg" | "pack" | "box" | string;
   category_id: string;
-  brand_id: string;
+  brand_id?: string;
   store_id?: string;
   sku: string;
+  stocks?: IStoreStock[];
   // supplier_id?: string | null;
   images?: ProductImageUploadType[];
   size?: ProductSize;

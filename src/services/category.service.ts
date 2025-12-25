@@ -184,7 +184,7 @@ export const fetchCategoriesService: ServiceFunctionParamType<
     const query: any = {};
 
     // Specific filters
-    if (params.category_id) query.category_id = params.category_id;
+    if (params.category_id) query._id = params.category_id;
     if (params.name) {
       query.name = { $regex: params.name, $options: "i" };
     }
@@ -204,13 +204,13 @@ export const fetchCategoriesService: ServiceFunctionParamType<
 
     // Cursor-based pagination logic (simplified for string IDs)
     if (cursor) {
-      query.category_id = { $gt: cursor };
+      query._id = { $gt: cursor };
     }
 
     const categories = await CategoryModel.find(query)
-      .sort({ category_id: 1 }) // Ensure deterministic sort for cursor pagination
+      .sort({ _id: 1 }) // Ensure deterministic sort for cursor pagination
       .limit(limit + 1)
-      .populate("products") // Populate virtual 'products'
+      // .populate("products") // Populate virtual 'products'
       .lean()
       .exec();
 
