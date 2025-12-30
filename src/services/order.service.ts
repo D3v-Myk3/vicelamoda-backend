@@ -26,9 +26,6 @@ export const createOrderService: ServiceFunctionParamType<
   CreateOrderRequest,
   CreateOrderResponse
 > = async (params, { user_data }) => {
-  console.log(params);
-  console.log(user_data);
-
   const source = "CREATE ORDER SERVICE";
   logger.info("Starting createOrderService", { body: params });
 
@@ -173,8 +170,6 @@ export const createOrderService: ServiceFunctionParamType<
     } else if (params.payment_method === PaymentMethod.STRIPE) {
       payment_status = PaymentStatus.PENDING;
     }
-
-    console.log(orderItems);
 
     // Create order
     const [order] = await OrderModel.create(

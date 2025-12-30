@@ -73,7 +73,6 @@ export const userAuthMiddleware = async (
     }
 
     const [user] = response?.data as UserTblType[];
-    console.log(user);
 
     if (!user) {
       logger.warn(`User not registered`, {
