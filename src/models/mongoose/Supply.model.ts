@@ -6,12 +6,17 @@ export enum ChangeType {
   adjustment = "adjustment",
 }
 
+export interface ISuppliedVariation {
+  variant_sku: string;
+  variant_name: string;
+  quantity: number;
+}
+
 export interface ISuppliedProduct {
   public_id: string;
   product_id: mongoose.Types.ObjectId;
-  quantity: number;
-  variant_sku?: string;
-  variant_name?: string;
+  quantity: number; // Total quantity for this product
+  variations: ISuppliedVariation[];
   date_supplied: Date;
 
   createdAt: Date;
@@ -29,6 +34,15 @@ export interface ISupply extends Document {
   createdAt: Date;
   updatedAt: Date;
 }
+
+const SuppliedVariationSchema = new Schema<ISuppliedVariation>(
+  {
+    variant_sku: { type: String, required: true },
+    variant_name: { type: String, required: true },
+    quantity: { type: Number, required: true },
+  },
+  { _id: false }
+);
 
 const SuppliedProductSchema = new Schema<ISuppliedProduct>(
   {
@@ -53,11 +67,10 @@ const SuppliedProductSchema = new Schema<ISuppliedProduct>(
       type: Date,
       default: Date.now,
     },
-    variant_sku: {
-      type: String,
-      sparse: true,
+    variations: {
+      type: [SuppliedVariationSchema],
+      default: [],
     },
-    variant_name: String,
   },
   {
     timestamps: true,
@@ -115,14 +128,14 @@ const SupplySchema = new Schema<ISupply>(
 SupplySchema.virtual("store", {
   ref: "Store",
   localField: "store_id",
-  foreignField: "store_id",
+  foreignField: "_id",
   justOne: true,
 });
 
 SupplySchema.virtual("recorder", {
   ref: "User",
   localField: "recorded_by",
-  foreignField: "user_id",
+  foreignField: "_id",
   justOne: true,
 });
 

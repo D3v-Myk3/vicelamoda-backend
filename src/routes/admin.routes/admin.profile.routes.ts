@@ -1,7 +1,7 @@
 import express from "express";
 import {
+  updateAdminProfileController,
   updatePasswordController,
-  updateUserProfileController,
 } from "../../controllers/profile.controller";
 import { Zod_ValidationMiddleware } from "../../middlewares/validations/zod.validation.middleware";
 import {
@@ -9,18 +9,18 @@ import {
   updateUserProfileZodSchema,
 } from "../../schemas/user.zod.schemas";
 
-const userProfileRoutes = express.Router();
+const adminProfileRoutes = express.Router();
 
-userProfileRoutes.put(
+adminProfileRoutes.put(
   "/update",
   Zod_ValidationMiddleware({
     schema: updateUserProfileZodSchema,
-    source: "Update user profile",
+    source: "Update admin profile",
   }),
-  updateUserProfileController
+  updateAdminProfileController
 );
 
-userProfileRoutes.put(
+adminProfileRoutes.put(
   "/update-password",
   Zod_ValidationMiddleware({
     schema: updatePasswordZodSchema,
@@ -29,4 +29,4 @@ userProfileRoutes.put(
   updatePasswordController
 );
 
-export default userProfileRoutes;
+export default adminProfileRoutes;

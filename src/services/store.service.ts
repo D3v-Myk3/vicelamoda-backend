@@ -117,7 +117,7 @@ export const fetchStoresService: ServiceFunctionParamType<
 
     const stores = await StoreModel.find(query)
       .sort({ createdAt: -1 })
-      .populate("manager")
+      // .populate("manager")
       .lean()
       .exec();
 

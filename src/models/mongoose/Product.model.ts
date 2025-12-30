@@ -98,7 +98,7 @@ ProductImageSchema.index({ is_primary: 1 });
 /* ===================== VARIANTS ===================== */
 
 export interface IStoreStock {
-  store_id: string;
+  store_id: mongoose.Types.ObjectId;
   stock: number;
 }
 
@@ -115,6 +115,7 @@ export interface IMaterialVariant {
   name: string; // JEANS, LEATHER
   id: string; // JEANS, LEATHER
   sku: string;
+  cost_price: number; // 👈 PRICE LEVEL
   price: number; // 👈 PRICE LEVEL
   colors: IColorVariant[];
 }
@@ -126,6 +127,13 @@ export interface ISizeVariant {
   materials: IMaterialVariant[];
 }
 
+const StoreStockSchema = new Schema<IStoreStock>(
+  {
+    store_id: { type: Schema.Types.ObjectId, ref: "Store", required: true },
+    stock: { type: Number, min: 0, required: true },
+  },
+  { _id: false }
+);
 const ColorSchema = new Schema<IColorVariant>(
   {
     name: { type: String, required: true },
@@ -133,12 +141,7 @@ const ColorSchema = new Schema<IColorVariant>(
     id: { type: String, required: true },
     sku: { type: String, required: true }, // 👈 ADDED
     image_url: String,
-    stocks: [
-      {
-        store_id: { type: Schema.Types.ObjectId, ref: "Store", required: true },
-        stock: { type: Number, min: 0, required: true },
-      },
-    ],
+    stocks: { type: [StoreStockSchema], default: [] },
   },
   { _id: false }
 );
@@ -148,6 +151,7 @@ const MaterialSchema = new Schema<IMaterialVariant>(
     name: { type: String, required: true },
     id: { type: String, required: true },
     sku: { type: String, required: true },
+    cost_price: { type: Number, required: true, min: 0 },
     price: { type: Number, required: true, min: 0 },
     colors: { type: [ColorSchema], default: [] },
   },
@@ -198,6 +202,7 @@ export interface IProduct extends Document {
 
   unit: Unit;
   status: ProductStatus;
+  stocks: IStoreStock[];
 
   category_id?: string;
   brand_id?: string;
@@ -219,7 +224,7 @@ const ProductSchema = new Schema<IProduct>(
       required: true,
       unique: true,
       default: () =>
-        `prd_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
+        `prod_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
     },
 
     name: { type: String, required: true, index: true },
@@ -248,6 +253,8 @@ const ProductSchema = new Schema<IProduct>(
       enum: Object.values(Unit),
       default: Unit.pcs,
     },
+
+    stocks: { type: [StoreStockSchema], default: [] },
 
     status: {
       type: String,
@@ -347,7 +354,8 @@ ProductSchema.pre("validate", function (next) {
           name: "DEFAULT",
           id: "DEFAULT",
           sku: buildSKU(size.sku),
-          price: this.selling_price,
+          cost_price: this.cost_price || 0,
+          price: this.selling_price || 0,
           colors: [],
         },
       ];
@@ -369,6 +377,10 @@ ProductSchema.pre("validate", function (next) {
 
       if (mat.price < 0) {
         return next(new Error(`Negative price: ${mat.sku}`));
+      }
+
+      if (mat.cost_price !== undefined && mat.cost_price < 0) {
+        return next(new Error(`Negative cost price: ${mat.sku}`));
       }
 
       const colorSet = new Set();
@@ -397,6 +409,10 @@ ProductSchema.pre("save", function (next) {
     this.quantity_in_stock = calculateTotalStock(this.variants);
     this.variation_options = syncVariationOptions(this.variants);
   } else {
+    // If no variants, sum up stock from stores if available
+    if (this.stocks && this.stocks.length > 0) {
+      this.quantity_in_stock = this.stocks.reduce((sum, s) => sum + s.stock, 0);
+    }
     this.variation_options = [];
   }
 

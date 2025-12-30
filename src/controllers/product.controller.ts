@@ -4,6 +4,7 @@ import { defaultError, handleErrors } from "../helpers/error.helpers";
 import { CreateProductFormType } from "../schemas/product.zod.schemas";
 import {
   createProductService,
+  deleteProductService,
   fetchProductByBarcodeService,
   fetchProductsService,
   fetchSingleProductService,
@@ -53,14 +54,19 @@ export const createProductController = async (
 
     // Upload Other Images
     if (files?.other_images && files.other_images.length > 0) {
-      for (const file of files.other_images) {
-        const result = await uploadToCloudinary(
+      const uploadPromises = files.other_images.map((file) =>
+        uploadToCloudinary(
           file.buffer,
           "vicelamoda/uploads/products",
           file.originalname
-        );
-        images.push({ image_url: result.secure_url, is_primary: false });
-      }
+        ).then((result) => ({
+          image_url: result.secure_url,
+          is_primary: false,
+        }))
+      );
+
+      const uploadedImages = await Promise.all(uploadPromises);
+      images.push(...uploadedImages);
     }
 
     // Attach images to body
@@ -203,6 +209,10 @@ export const fetchSingleProductController = async (
     const product_id = req.params.product_id;
     const constraints = req.query as FetchSingleProductType["constraints"];
     const { admin_data, manager_data } = res.locals;
+    console.log("Admin Data");
+    console.log(admin_data);
+    console.log("Manager Data");
+    console.log(manager_data);
 
     const response = await fetchSingleProductService(
       {
@@ -275,19 +285,24 @@ export const updateProductController = async (
       }
 
       if (files.other_images && files.other_images.length > 0) {
-        for (const file of files.other_images) {
-          const result = await uploadToCloudinary(
+        const uploadPromises = files.other_images.map((file) =>
+          uploadToCloudinary(
             file.buffer,
             "vicelamoda/uploads/products",
             file.originalname
-          );
-          images.push({ image_url: result.secure_url, is_primary: false });
-        }
+          ).then((result) => ({
+            image_url: result.secure_url,
+            is_primary: false,
+          }))
+        );
+
+        const uploadedImages = await Promise.all(uploadPromises);
+        images.push(...uploadedImages);
       }
     }
 
     if (images.length > 0) {
-      body.images = images;
+      body.images = [...(body.images || []), ...images];
     }
 
     const response = await updateProductService(
@@ -301,6 +316,39 @@ export const updateProductController = async (
     }
 
     const resData = response.data as JSONResponseType<ProductTblType>;
+    res.status(response.status).json(resData);
+  } catch (error) {
+    if (error instanceof Error) {
+      handleErrors({ res, error, source });
+    } else {
+      defaultError(source, error as string);
+    }
+  }
+};
+
+export const deleteProductController = async (
+  req: CustomRequest<{ product_id: string }, unknown, unknown>,
+  res: CustomResponse<null>
+): Promise<void> => {
+  const source = "DELETE PRODUCT CONTROLLER";
+  try {
+    logger.info("Starting deleteProductController", {
+      params: req.params,
+    });
+    const { product_id } = req.params;
+    const { admin_data, manager_data } = res.locals;
+
+    const response = await deleteProductService(product_id, {
+      admin_data,
+      manager_data,
+    });
+
+    if (response.errorMessage || response.status >= 300) {
+      handleErrors({ response, res });
+      return;
+    }
+
+    const resData = response.data as JSONResponseType<null>;
     res.status(response.status).json(resData);
   } catch (error) {
     if (error instanceof Error) {

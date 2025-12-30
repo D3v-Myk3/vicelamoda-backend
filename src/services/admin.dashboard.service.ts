@@ -108,7 +108,7 @@ export const getDashboardStatsService: ServiceFunctionParamType<
     const overview = [
       {
         label: "Total Revenue",
-        value: `$${totalRevenue.toLocaleString()}`,
+        value: `${totalRevenue.toFixed(2)}`,
         icon: "DollarSign",
         trend: calculateTrend(currentMonthRevenue, lastMonthRevenue),
       },
@@ -126,7 +126,7 @@ export const getDashboardStatsService: ServiceFunctionParamType<
       },
       {
         label: "Avg. Order Value",
-        value: `$${avgOrderValue.toFixed(2)}`,
+        value: `${avgOrderValue.toFixed(2)}`,
         icon: "TrendingUp",
         trend: calculateTrend(
           currentMonthAvgOrderValue,
@@ -212,7 +212,7 @@ export const getDashboardStatsService: ServiceFunctionParamType<
         order.shipping_address?.fullname ||
         (order.user as any)?.fullname ||
         "Guest",
-      amount: `$${order.total_amount}`,
+      amount: `${order.total_amount}`,
       status: order.fulfillment_status.toLowerCase(),
       date: new Date(order.createdAt).toLocaleDateString("en-US", {
         month: "short",

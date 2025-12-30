@@ -8,9 +8,20 @@ export type CreateSupplyType = CreateSupplyFormType & {
 
 export type SupplyTblType = ISupply & {
   products: (ISuppliedProduct & {
-    product?: { name: string; sku: string; selling_price: number };
+    product?: {
+      name?: string;
+      product_name?: string;
+      sku: string;
+      selling_price: number;
+    };
+    current_stock?: number;
   })[];
   store?: StoreTblType;
+  recorder?: {
+    fullname: string;
+    email: string;
+    user_id: string;
+  };
   stock_movements?: StockMovementsTblType[];
 };
 

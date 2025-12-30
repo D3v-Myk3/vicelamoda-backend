@@ -7,9 +7,11 @@ import adminCategoryRoutes from "./admin.category.routes";
 import adminProductRoutes from "./admin.product.routes";
 // import adminSalesRoutes from "./admin.sales.routes";
 import adminDashboardRoutes from "./admin.dashboard.routes";
+import adminNotificationRoutes from "./admin.notification.routes";
+import adminOrderRoutes from "./admin.order.routes";
 import adminStoreRoutes from "./admin.store.routes";
 import adminSupplyRoutes from "./admin.supply.routes";
-import adminOrderRoutes from "./admin.order.routes";
+import adminProfileRoutes from "./admin.profile.routes";
 
 const adminRoutes = express.Router();
 
@@ -34,5 +36,7 @@ adminRoutes.use("/products", adminProductRoutes);
 adminRoutes.use("/categories", adminCategoryRoutes);
 adminRoutes.use("/dashboard", adminDashboardRoutes);
 adminRoutes.use("/orders", adminOrderRoutes);
+adminRoutes.use("/notifications", adminNotificationRoutes);
+adminRoutes.use("/profile", adminProfileRoutes);
 
 export default adminRoutes;

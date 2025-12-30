@@ -32,7 +32,7 @@ export const uploadToCloudinary = (
           ? `${Date.now()}-${filename.replace(/\.[^/.]+$/, "")}`
           : undefined,
         resource_type: "image",
-        timeout: 300000, // 5 minutes - important
+        timeout: 120000, // Reduced to 2 minutes
       },
       (error, result) => {
         if (error) {
@@ -46,20 +46,25 @@ export const uploadToCloudinary = (
       }
     );
 
+    // Explicitly handle stream errors to prevent app crashes
+    uploadStream.on("error", (err) => {
+      logger.error("Cloudinary upload stream error", { error: err });
+      reject(err);
+    });
+
     // Important: use Readable stream instead of uploadStream.end(buffer)
-    Readable.from(buffer).pipe(uploadStream);
+    const stream = Readable.from(buffer);
+    stream.on("error", (err) => {
+      logger.error("Buffer read stream error", { error: err });
+      reject(err);
+    });
 
-    /* const readStream = fs.createReadStream(buffer, { encoding: "binary" });
-    readStream.on("error", (err) => reject(err));
-    readStream.pipe(uploadStream); */
-
-    // uploadStream.write(buffer);
-    // uploadStream.end();
+    stream.pipe(uploadStream);
   });
 
   return withTimeout<UploadApiResponse>(
     uploadPromise,
-    cloudinaryConfig.UPLOAD_TIMEOUT_MS
+    120000 // Match the cloudinary timeout
   );
 };
 

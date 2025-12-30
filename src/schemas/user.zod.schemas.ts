@@ -23,6 +23,12 @@ export const updateUserProfileZodSchema = z.strictObject({
   phone: z.string().min(2, "Phone is too short"),
 });
 
+// ✅ Password update schema
+export const updatePasswordZodSchema = z.strictObject({
+  old_password: z.string().min(6, "Old password is required"),
+  new_password: z.string().min(6, "New password must be at least 6 characters"),
+});
+
 // ✅ Infer type from Zod schema
 export type UpdateUserProfileFormType = z.infer<
   typeof updateUserProfileZodSchema

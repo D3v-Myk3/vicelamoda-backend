@@ -116,7 +116,7 @@ export const fetchProductsModel: ModelFunctionParamType<
     }
   }
 
-  console.log("Query: ", query);
+  // console.log("Query: ", query);
 
   let queryBuilder = ProductModel.find(query)
     .populate({
@@ -148,7 +148,7 @@ export const fetchProductsModel: ModelFunctionParamType<
   // Images are always included (embedded in product)
   const result = await queryBuilder.lean().exec();
 
-  console.log("Result: ", result);
+  // console.log("Result: ", result);
 
   let nextCursor: string | null = null;
   if (result.length > limit) {
@@ -175,13 +175,13 @@ export const fetchProductsModel: ModelFunctionParamType<
     })
   );
 
-  console.log(
+  /*   console.log(
     "transformedResult",
     transformedResult.map((r) => ({
       _id: r._id?.toString(),
       product_id: r.product_id,
     }))
-  );
+  ); */
 
   logger.info(`Fetch all products completed`, {
     source,
@@ -235,9 +235,9 @@ export const fetchSingleProductModel: ModelFunctionParamType<
     });
   }
 
-  const result = await queryBuilder.lean().exec();
+  const response = await queryBuilder.lean().exec();
 
-  if (!result) {
+  if (!response) {
     throw new CustomError({
       data: null,
       errorMessage: "Product not found",
@@ -246,11 +246,13 @@ export const fetchSingleProductModel: ModelFunctionParamType<
     });
   }
 
+  const { category_id, brand_id, ...result } = response;
+
   // Transform result to match ProductTblType structure
   const transformedResult = {
     ...result,
-    category: result.category_id || null,
-    brand: result.brand_id || null,
+    category: category_id || null,
+    brand: brand_id || null,
     images: result.images || [],
     has_variants: result.has_variants || false,
     variants: result.variants || [],
