@@ -18,7 +18,10 @@ import {
   PaymentMethod,
   PaymentStatus,
 } from "../models/mongoose/Order.model";
-import { ProductModel } from "../models/mongoose/Product.model";
+import {
+  calculateTotalStock,
+  ProductModel,
+} from "../models/mongoose/Product.model";
 import { StoreModel } from "../models/mongoose/Store.model";
 import { SupplyModel } from "../models/mongoose/Supply.model";
 import { UserModel, UserRole } from "../models/mongoose/User.model";
@@ -49,26 +52,38 @@ export const seedAdmin = async () => {
       });
     } else {
       const hashedAdminPassword = await argon2HashPassword(ADMIN_PASSWORD);
-      await UserModel.create({
+      const admin = await UserModel.create({
         fullname: ADMIN_NAME,
         email: ADMIN_EMAIL,
         password: hashedAdminPassword,
         role: UserRole.ADMIN,
       });
-      logger.info("Super admin seeded successfully", { source });
+      // console.log(admin);
+
+      if (admin) {
+        logger.info("Super admin seeded successfully", { source });
+      } else {
+        logger.warn("Super admin seeding failed", { source });
+      }
     }
   }
 
   const existingUser = await UserModel.findOne({ email: USER_EMAIL });
   if (!existingUser) {
     const hashedUserPassword = await argon2HashPassword(USER_PASSWORD);
-    await UserModel.create({
+    const user = await UserModel.create({
       fullname: USER_NAME,
       email: USER_EMAIL,
       password: hashedUserPassword,
       role: UserRole.CUSTOMER,
     });
-    logger.info("Test customer seeded successfully", { source });
+    // console.log(user);
+
+    if (user) {
+      logger.info("Test customer seeded successfully", { source });
+    } else {
+      logger.warn("Test customer seeding failed", { source });
+    }
   }
   /* } catch (error) {
     logger.error("Error seeding admin/user", { source, error });
@@ -233,6 +248,7 @@ export const seedProductsFromFile = async (
   const raw = fs.readFileSync(path.join(jsonDir, fileName), "utf-8");
   const { products } = JSON.parse(raw);
 
+  const store = await StoreModel.findOne().lean();
   const brands = await BrandModel.find();
   const categories = await CategoryModel.find();
 
@@ -265,15 +281,27 @@ export const seedProductsFromFile = async (
       size_variation || null
     );
 
-    // Construct Mongoose Product object
-    // Assuming ProductModel includes images and quantity in the main doc or variants
-    // The Product model provided has 'images' array and 'quantity_in_stock'
-    // We'll sum up store_stocks for initial quantity_in_stock if provided, or default to 10
-    const initialQty =
-      store_stocks?.reduce(
-        (acc: number, s: any) => acc + (s.quantity || 0),
-        0
-      ) || 10;
+    const initialQty = prod.has_variants
+      ? calculateTotalStock(prod.variants || [])
+      : store_stocks?.reduce(
+          (acc: number, s: any) => acc + (s.quantity || 0),
+          0
+        ) || 10;
+
+    // Inject actual store_id into variants if they exist
+    const processedVariants = prod.variants?.map((v: any) => ({
+      ...v,
+      materials: v.materials?.map((m: any) => ({
+        ...m,
+        colors: m.colors?.map((c: any) => ({
+          ...c,
+          stocks: c.stocks?.map((s: any) => ({
+            ...s,
+            store_id: store?._id || s.store_id, // Use actual Store ObjectId
+          })),
+        })),
+      })),
+    }));
 
     await ProductModel.create({
       ...rest,
@@ -285,8 +313,8 @@ export const seedProductsFromFile = async (
         image_url: img.image_url,
         is_primary: img.is_primary || false,
       })),
-      // If there are variants, they should be processed here too
-      // For this seed, assuming flat products or matching structure
+      has_variants: !!prod.variants?.length,
+      variants: processedVariants || [],
     });
     count++;
   }
@@ -332,12 +360,25 @@ export const seedSupplies = async () => {
     const selectedProducts = products.filter(() => Math.random() > 0.5);
     if (selectedProducts.length === 0) selectedProducts.push(products[0]);
 
-    const supplyItems = selectedProducts.map((p) => ({
-      product_id: p.product_id,
-      quantity: Math.floor(Math.random() * 50) + 10,
-      variant_sku: p.has_variants ? p.variants[0]?.sku : undefined, // simplified
-      variant_name: p.has_variants ? "Standard Variant" : undefined,
-    }));
+    const supplyItems = selectedProducts.map((p) => {
+      let variant_sku: string | undefined;
+      let variant_name: string | undefined;
+
+      if (p.has_variants && p.variants.length > 0) {
+        const size = p.variants[0];
+        const material = size.materials[0];
+        const color = material?.colors[0];
+        variant_sku = color?.sku || material?.sku || size.sku; // Use most specific SKU available
+        variant_name = `${size.size} / ${material?.name || "Default"} / ${color?.name || "Default"}`;
+      }
+
+      return {
+        product_id: p.product_id,
+        quantity: Math.floor(Math.random() * 50) + 10,
+        variant_sku,
+        variant_name,
+      };
+    });
 
     await SupplyModel.create({
       supplier_name: scenario.supplier,
@@ -438,16 +479,29 @@ export const seedOrders = async () => {
     let totalAmount = 0;
     const orderItems = selectedProducts.map((p) => {
       const qty = Math.floor(Math.random() * 3) + 1;
-      const price = p.selling_price;
+      let price = p.selling_price;
+      let variant_sku: string | undefined;
+      let variant_name: string | undefined;
+
+      if (p.has_variants && p.variants.length > 0) {
+        const size = p.variants[0];
+        const material = size.materials[0];
+        const color = material?.colors[0];
+        price = material?.price ?? p.selling_price;
+        variant_sku = color?.sku || material?.sku; // Price lives at material level, but identifying item by color SKU
+        variant_name = `${size.size} / ${material?.name || "Default"} / ${color?.name || "Default"}`;
+      }
+
       const lineTotal = qty * price;
       totalAmount += lineTotal;
+
       return {
         product_id: p.product_id,
         quantity: qty,
         unit_price: price,
         line_total: lineTotal,
-        variant_sku: p.has_variants ? p.variants[0]?.sku : undefined,
-        variant_name: p.has_variants ? "Default" : undefined,
+        variant_sku,
+        variant_name,
       };
     });
 
@@ -458,10 +512,10 @@ export const seedOrders = async () => {
         fullname: targetUser.fullname,
         email: targetUser.email,
         phone: "1234567890",
-        address_line1: "123 Seed Street",
+        address1: "123 Seed Street",
         city: "Seed City",
         state: "Seed State",
-        postal_code: "12345",
+        zip_code: "123454",
         country: "Seedland",
       },
       items: orderItems,
@@ -487,106 +541,20 @@ export const seedOrders = async () => {
 /* -------------------------------------------------------------------------- */
 
 export const seedVariedProducts = async () => {
-  const source = "SEED VARIED PRODUCTS";
-  // try {
-  const brands = await BrandModel.find();
-  const categories = await CategoryModel.find();
-
-  if (!brands.length || !categories.length) {
-    logger.warn("Missing brands or categories for varied products", { source });
-    return;
-  }
-
-  const materials = ["Cotton", "Polyester", "Leather", "Denim", "Silk"];
-  const colors = ["Red", "Blue", "Black", "White", "Green"];
-  // const sizes = [UserRole.CUSTOMER, "S", "M", "L", "XL"]; // Assuming ProductSize enum or similar strings
-
-  let count = 0;
-  for (let i = 0; i < 25; i++) {
-    const brand = brands[Math.floor(Math.random() * brands.length)];
-    const category = categories[Math.floor(Math.random() * categories.length)];
-
-    // Generate random variants
-    const productVariants = [];
-    const numVariants = Math.floor(Math.random() * 3) + 3;
-
-    // Create a pool of all possible combinations to ensure uniqueness
-    const combinations = [];
-    const sizeOptions = ["SMALL", "MEDIUM", "LARGE", "EXTRA_LARGE"];
-
-    for (const s of sizeOptions) {
-      for (const c of colors) {
-        for (const m of materials) {
-          combinations.push({ size: s, color: c, material: m });
-        }
-      }
-    }
-
-    // Shuffle and pick
-    for (let k = combinations.length - 1; k > 0; k--) {
-      const j = Math.floor(Math.random() * (k + 1));
-      [combinations[k], combinations[j]] = [combinations[j], combinations[k]];
-    }
-
-    const selectedCombos = combinations.slice(0, numVariants);
-
-    for (let j = 0; j < selectedCombos.length; j++) {
-      const { size, color, material } = selectedCombos[j];
-
-      productVariants.push({
-        sku: `VAR-${i}-${j}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`,
-        size: size,
-        price: Math.random() * 50 + 20,
-        attributes: [
-          { key: "Color", value: color },
-          { key: "Material", value: material },
-        ],
-        stocks: [
-          {
-            store_id: "cln2g31d4000008jz072lb09k",
-            stock: Math.floor(Math.random() * 20) + 5,
-          },
-        ], // Using the known seeded store ID
-        status: "active",
-      });
-    }
-
-    const prodName = `${brand.name} ${category.name} Variant Collection ${i + 1}`;
-
-    // Create the product
-    await ProductModel.create({
-      product_id: `prod_var_${Date.now()}_${i}`,
-      name: prodName,
-      sku: `SKU-VAR-${Date.now()}-${i}`,
-      description: `A varied product collection featuring different options.`,
-      brand_id: brand._id,
-      category_id: category._id,
-      has_variants: true,
-      variants: productVariants,
-      status: "active",
-      images: [
-        {
-          image_url:
-            "https://res.cloudinary.com/devm-cloud-server/image/upload/v1765761080/V-Jacket_h1xzi3.jpg", // Placeholder
-          is_primary: true,
-        },
-      ],
-    });
-    count++;
-  }
-  logger.info("Varied products seeded", { source, count });
-  /* } catch (error) {
-     logger.error("Error seeding varied products", { source, error });
-  } */
+  // Logic moved to JSON files for consistency as requested
+  logger.info("seedVariedProducts skipped (moved to JSON)", {
+    source: "SEED VARIED PRODUCTS",
+  });
 };
 
 export const seedVariantSupplies = async () => {
   const source = "SEED VARIANT SUPPLIES";
-  // try {
-  // Find products that have variants
   const variedProducts = await ProductModel.find({ has_variants: true });
   const store = await StoreModel.findOne();
   const admin = await UserModel.findOne({ role: UserRole.ADMIN });
+  // console.log(variedProducts);
+  // console.log(store);
+  // console.log(admin);
 
   if (!variedProducts.length || !store || !admin) {
     logger.warn("Missing prerequisites for seeding variant supplies", {
@@ -595,50 +563,39 @@ export const seedVariantSupplies = async () => {
     return;
   }
 
-  const suppliers = [
-    "Variant Supply Co.",
-    "Custom Goods Ltd.",
-    "Specialty Sourcing",
-  ];
-
   let count = 0;
   for (let i = 0; i < 15; i++) {
     const product =
       variedProducts[Math.floor(Math.random() * variedProducts.length)];
-    const variant =
+    const size =
       product.variants[Math.floor(Math.random() * product.variants.length)];
+    const material = size.materials[0];
+    const color = material?.colors[0];
 
-    const supplier = suppliers[Math.floor(Math.random() * suppliers.length)];
+    if (!color) continue;
 
     await SupplyModel.create({
-      supplier_name: supplier,
-      supplier_contact: `contact@${supplier.replace(/\s/g, "").toLowerCase()}.com`,
-      date_supplied: new Date(
-        Date.now() - Math.random() * 15 * 24 * 60 * 60 * 1000
-      ),
+      supplier_name: "Hierarchical Supplier",
+      supplier_contact: "contact@hierarchical.com",
       recorded_by: admin.user_id,
       store_id: store.store_id,
       products: [
         {
           product_id: product.product_id,
           quantity: Math.floor(Math.random() * 20) + 5,
-          variant_sku: variant.sku,
-          variant_name: `${variant.size} / ${variant.attributes.map((a: any) => a.value).join(" ")}`,
-          cost_price: (variant.price * 0.6).toFixed(2), // Estimate cost
+          variant_sku: color.sku,
+          variant_name: `${size.size} / ${material.name} / ${color.name}`,
+          cost_price: (material.price * 0.6).toFixed(2),
         },
       ],
     });
     count++;
   }
   logger.info("Variant supplies seeded", { source, count });
-  /* } catch (error) {
-       logger.error("Error seeding variant supplies", { source, error });
-    } */
 };
 
 export const seedVariantOrders = async () => {
   const source = "SEED VARIANT ORDERS";
-  // try {
   const variedProducts = await ProductModel.find({ has_variants: true });
   const user = await UserModel.findOne({ role: UserRole.CUSTOMER });
   const admin = await UserModel.findOne({ role: UserRole.ADMIN });
@@ -651,7 +608,6 @@ export const seedVariantOrders = async () => {
 
   let count = 0;
   for (let i = 0; i < 15; i++) {
-    // Create an order with 1-3 varied items
     const numItems = Math.floor(Math.random() * 3) + 1;
     const orderItems = [];
     let totalAmount = 0;
@@ -659,20 +615,25 @@ export const seedVariantOrders = async () => {
     for (let j = 0; j < numItems; j++) {
       const product =
         variedProducts[Math.floor(Math.random() * variedProducts.length)];
-      const variant =
+      const size =
         product.variants[Math.floor(Math.random() * product.variants.length)];
-      const qty = Math.floor(Math.random() * 2) + 1;
+      const material = size.materials[0];
+      const color = material?.colors[0];
 
-      const lineTotal = qty * variant.price;
+      if (!color) continue;
+
+      const qty = Math.floor(Math.random() * 2) + 1;
+      const price = material.price;
+      const lineTotal = qty * price;
       totalAmount += lineTotal;
 
       orderItems.push({
         product_id: product.product_id,
         quantity: qty,
-        unit_price: variant.price,
+        unit_price: price,
         line_total: lineTotal,
-        variant_sku: variant.sku,
-        variant_name: `${variant.size} - ${variant.attributes.map((a: any) => a.value).join("/")}`,
+        variant_sku: color.sku,
+        variant_name: `${size.size} / ${material.name} / ${color.name}`,
       });
     }
 
@@ -683,10 +644,10 @@ export const seedVariantOrders = async () => {
         fullname: targetUser.fullname,
         email: targetUser.email,
         phone: "555-0199",
-        address_line1: "456 Variation Lane",
+        address1: "456 Variation Lane",
         city: "Diversity City",
         state: "CA",
-        postal_code: "90210",
+        zip_code: "90210",
         country: "USA",
       },
       items: orderItems,
@@ -694,41 +655,44 @@ export const seedVariantOrders = async () => {
       payment_method: PaymentMethod.STRIPE,
       payment_status: PaymentStatus.COMPLETED,
       fulfillment_status: FulfillmentStatus.PROCESSING,
-      createdAt: new Date(
-        Date.now() - Math.random() * 10 * 24 * 60 * 60 * 1000
-      ),
     });
     count++;
   }
   logger.info("Variant orders seeded", { source, count });
-  /* } catch (error) {
-       logger.error("Error seeding variant orders", { source, error });
-    } */
 };
 
 export const seedAllShopData = async () => {
   const source = "SEED ALL SHOP DATA";
-  // try {
+
+  // Clear Database for a fresh start
+  logger.info("Clearing database before seeding...", { source });
+  await Promise.all([
+    StoreModel.deleteMany({}),
+    CategoryModel.deleteMany({}),
+    BrandModel.deleteMany({}),
+    ProductModel.deleteMany({}),
+    SupplyModel.deleteMany({}),
+    OrderModel.deleteMany({}),
+    // We optionally keep users or clear them depending on need.
+    // Let's clear and re-seed manager/admin to be safe.
+    // UserModel.deleteMany({}),
+  ]);
+
   await seedManagerForStore();
   await seedStoreFromFile();
   await seedCategoriesFromFile();
   await seedBrandsFromFile();
   await seedProductsFromFile();
+  await seedProductsFromFile("seed.products.variants.json");
 
   // Check if we need to seed scenarios
-  const supplyCount = await SupplyModel.countDocuments();
-  if (supplyCount < 10) await seedSupplies();
-
-  const orderCount = await OrderModel.countDocuments();
-  if (orderCount < 10) await seedOrders();
+  // await seedSupplies();
+  // await seedOrders();
 
   // Seed Variants
-  await seedVariedProducts();
-  await seedVariantSupplies();
-  await seedVariantOrders();
+  // await seedVariedProducts();
+  // await seedVariantSupplies();
+  // await seedVariantOrders();
 
-  logger.info("All shop data seeded", { source });
-  /* } catch (error) {
-    logger.error("Error running all shop seeds", { source, error });
-  } */
+  logger.info("All shop data seeded successfully", { source });
 };

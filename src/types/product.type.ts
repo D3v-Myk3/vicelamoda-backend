@@ -1,5 +1,6 @@
 import {
   IProduct,
+  IStoreStock,
   IVariationOption,
   ProductSize,
 } from "../models/mongoose/Product.model";
@@ -99,26 +100,37 @@ export type ProductImageUploadType = {
   is_primary?: boolean;
 };
 
-export type createProductVariant = {
-  size: ProductSize;
+export type CreateColorVariant = {
+  name: string;
+  image_url?: string;
+  stocks: IStoreStock[];
+};
+
+export type CreateMaterialVariant = {
+  name: string;
   price: number;
-  stock: { store_id: string; quantity: number }[];
-  attributes: { key: string; value: string }[];
-  sku: string;
+  cost_price?: number;
+  colors: CreateColorVariant[];
+};
+
+export type CreateSizeVariant = {
+  size: ProductSize;
+  materials: CreateMaterialVariant[];
 };
 
 export type CreateProductType = CreateProductFormType & {
   quantity_in_stock?: number | string;
   unit?: "pcs" | "ml" | "ltr" | "g" | "kg" | "pack" | "box" | string;
   category_id: string;
-  brand_id: string;
+  brand_id?: string;
   store_id?: string;
   sku: string;
+  stocks?: IStoreStock[];
   // supplier_id?: string | null;
   images?: ProductImageUploadType[];
   size?: ProductSize;
   has_variants?: boolean;
-  variants: createProductVariant[];
+  variants: CreateSizeVariant[];
   variation_options?: IVariationOption[];
   status?: "active" | "inactive";
 };

@@ -1,6 +1,9 @@
 import { IUser, UserRole } from "../models/mongoose/User.model";
 import { UserRegistrationFormType } from "../schemas/access.zod.schemas";
-import { CreateUserFormType } from "../schemas/user.zod.schemas";
+import {
+  CreateUserFormType,
+  UpdateUserProfileFormType,
+} from "../schemas/user.zod.schemas";
 import { StoreTblType } from "./store.types";
 
 export type FetchUsersType = {
@@ -19,6 +22,13 @@ export type FetchUsersType = {
 export type RegisterUserType = UserRegistrationFormType & {};
 
 export type CreateUserType = CreateUserFormType & {};
+
+export type UpdateUserProfileType = UpdateUserProfileFormType & {};
+
+export type UpdatePasswordType = {
+  old_password: string;
+  new_password: string;
+};
 
 export type UserTblType = IUser & {
   _id: string;

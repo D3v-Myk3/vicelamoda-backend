@@ -4,6 +4,7 @@ import { IUser } from "./User.model";
 export enum PaymentMethod {
   STRIPE = "STRIPE",
   PAYMEO = "PAYMEO",
+  CARD = "CARD",
   CASH_ON_DELIVERY = "CASH_ON_DELIVERY",
   BANK_TRANSFER = "BANK_TRANSFER",
 }
@@ -12,7 +13,7 @@ export enum PaymentStatus {
   COMPLETED = "COMPLETED",
   PENDING = "PENDING",
   FAILED = "FAILED",
-  AWAITING_BANK_TRANSFER = "awaiting_bank_transfer",
+  AWAITING_BANK_TRANSFER = "AWAITING_BANK_TRANSFER",
 }
 
 export enum FulfillmentStatus {
@@ -27,16 +28,16 @@ export interface IShippingAddress {
   fullname: string;
   email: string;
   phone: string;
-  address_line1: string;
-  address_line2?: string;
+  address1: string;
+  address2?: string;
   city: string;
   state: string;
-  postal_code: string;
+  zip_code: string;
   country: string;
 }
 
 export interface IOrderItem {
-  product_id: string;
+  product_id: mongoose.Types.ObjectId;
   variant_sku?: string;
   variant_name?: string;
   quantity: number;
@@ -64,11 +65,11 @@ const ShippingAddressSchema = new Schema<IShippingAddress>(
     fullname: { type: String, required: true },
     email: { type: String, required: true },
     phone: { type: String, required: true },
-    address_line1: { type: String, required: true },
-    address_line2: String,
+    address1: { type: String, required: true },
+    address2: String,
     city: { type: String, required: true },
     state: { type: String, required: true },
-    postal_code: { type: String, required: true },
+    zip_code: { type: String, required: true },
     country: { type: String, required: true },
   },
   { _id: false }
@@ -76,15 +77,31 @@ const ShippingAddressSchema = new Schema<IShippingAddress>(
 
 const OrderItemSchema = new Schema<IOrderItem>(
   {
-    product_id: { type: String, required: true },
+    product_id: {
+      type: Schema.Types.ObjectId,
+      ref: "Product",
+      required: true,
+      index: true,
+    },
     variant_sku: { type: String },
     variant_name: { type: String },
     quantity: { type: Number, required: true },
     unit_price: { type: Number, required: true },
     line_total: { type: Number, required: true },
   },
-  { _id: false }
+  {
+    _id: false,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
 );
+
+OrderItemSchema.virtual("product", {
+  ref: "Product",
+  localField: "product_id",
+  foreignField: "_id",
+  justOne: true,
+});
 
 const OrderSchema = new Schema<IOrder>(
   {
@@ -164,7 +181,7 @@ const OrderSchema = new Schema<IOrder>(
 // OrderSchema.index({ fulfillment_status: 1 });
 OrderSchema.index({ createdAt: -1 });
 OrderSchema.index({ "shipping_address.email": 1 });
-OrderSchema.index({ "shipping_address.fullname": 1 });
+OrderSchema.index({ "shipping_address.zip_code": 1 });
 
 // Composite Indexes
 OrderSchema.index({ user_id: 1, createdAt: -1 });

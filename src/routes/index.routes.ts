@@ -5,9 +5,11 @@ import { rateLimiterMiddleware } from "../middlewares/DDos.middlewares";
 import { CustomResponse } from "../types/general.types";
 import accessRoutes from "./access.routes/access.index.routes";
 import adminRoutes from "./admin.routes/admin.index.routes";
+import newsletterRoutes from "./newsletter.routes";
+import productRoutes from "./product.routes";
 import searchRoutes from "./search.routes";
 import userRoutes from "./user.routes/user.index.routes";
-import productRoutes from "./product.routes";
+import categoryRoutes from "./category.routes";
 
 const router = Router();
 
@@ -28,12 +30,13 @@ router.use((req, res, next) => {
 
 router.use("/access", accessRoutes);
 router.use("/products", productRoutes);
-// router.use("/categories", categoryRoutes);
+router.use("/categories", categoryRoutes);
 // router.use("/brands", brandRoutes);
 // router.use("/orders", orderRoutes);
 router.use("/search", searchRoutes);
 // router.use("/sales", salesRoutes);
 router.use("/admin", adminRoutes);
+router.use("/newsletter", newsletterRoutes);
 router.use(userRoutes);
 // router.use("/wishlist", wishlistRoutes);
 // router.use("/supplies", supplyRoutes);

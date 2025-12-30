@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { DATABASE_URL } from "./env.configs";
+import { DATABASE_URL, DB_NAME } from "./env.configs";
 import { logger } from "./logger.configs";
 
 const globalForMongoose = globalThis as unknown as {
@@ -9,10 +9,11 @@ const globalForMongoose = globalThis as unknown as {
 let mongooseConnection: Promise<typeof mongoose>;
 
 if (!globalForMongoose.mongoose) {
-  mongooseConnection = mongoose.connect(DATABASE_URL); // Default bufferCommands: true
-  logger.info(
-    `Attempting to connect to DB: ${DATABASE_URL?.replace(/:[^:@]+@/, ":****@")}`
-  );
+  mongooseConnection = mongoose.connect(DATABASE_URL, {
+    // bufferCommands: false,
+    dbName: DB_NAME,
+  }); // Default bufferCommands: true
+  logger.info(`Attempting to connect to DB: ${DB_NAME}`);
   globalForMongoose.mongoose = mongooseConnection;
 } else {
   mongooseConnection = globalForMongoose.mongoose;

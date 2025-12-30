@@ -34,7 +34,10 @@ const StoreSchema = new Schema<IStore>(
     address: { type: String, required: true },
     phone: { type: String, required: true },
     manager_id: {
-      type: String,
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+      set: (val: any) => (val === "" ? null : val),
       // index: true,
     },
   },
@@ -48,12 +51,12 @@ const StoreSchema = new Schema<IStore>(
 
 /* ===================== VIRTUALS ===================== */
 
-StoreSchema.virtual("manager", {
+/* StoreSchema.virtual("manager", {
   ref: "User",
   localField: "manager_id",
   foreignField: "user_id",
   justOne: true,
-});
+}); */
 
 StoreSchema.index({ name: 1 });
 StoreSchema.index({ manager_id: 1 });

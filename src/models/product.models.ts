@@ -70,15 +70,53 @@ export const fetchProductsModel: ModelFunctionParamType<
   }
 
   // Cursor-based pagination
+  // Cursor-based pagination logic
   if (cursor) {
-    query.$or = query.$or || [];
-    query.$or.push(
-      { createdAt: { $lt: new Date() } },
-      { product_id: { $lt: cursor } }
-    );
+    try {
+      // Decode the cursor
+      const decodedCursor = JSON.parse(
+        Buffer.from(cursor, "base64").toString("utf-8")
+      );
+      const { c: cDate, p: pId } = decodedCursor;
+
+      // Ensure we have valid cursor data
+      if (cDate && pId) {
+        // Since we sort by { createdAt: -1, product_id: -1 }, we want items
+        // where (createdAt < cDate) OR (createdAt == cDate AND product_id < pId)
+        const dateFilter = { createdAt: { $lt: new Date(cDate) } };
+        const idFilter = {
+          createdAt: new Date(cDate),
+          _id: { $lt: pId },
+        };
+
+        // If we already have an $or clause (from search), we need to AND it with our pagination logic
+        // But since search uses $or at the top level, we must wrap it carefully.
+        // The structure should be: TopQuery AND ( (SearchConditions) ) AND (PaginationConditions)
+
+        const paginationOr = [dateFilter, idFilter];
+
+        if (query.$or) {
+          // If search exists, we need to combine it: (SearchQuery) AND (PaginationQuery)
+          query.$and = [
+            { $or: query.$or }, // Existing search conditions
+            { $or: paginationOr }, // Pagination conditions
+          ];
+          // Remove the top-level $or since it's now inside $and
+          delete query.$or;
+        } else {
+          // No search, just add pagination conditions directly to $or logic
+          // Note: Since 'query' might have other top-level AND conditions (like status, category),
+          // adding $or for pagination is correct as MongoDB treats top-level fields as implicit AND.
+          query.$or = paginationOr;
+        }
+      }
+    } catch (e) {
+      logger.warn(`Invalid cursor provided: ${cursor}`, { source });
+      // If cursor is invalid, we ignore it and fetch from start (default behavior) or could throw error
+    }
   }
 
-  console.log(query);
+  // console.log("Query: ", query);
 
   let queryBuilder = ProductModel.find(query)
     .populate({
@@ -91,7 +129,6 @@ export const fetchProductsModel: ModelFunctionParamType<
     })
     .sort({ createdAt: -1, product_id: -1 })
     .limit(limit + 1);
-  console.log(queryBuilder);
 
   // Handle constraints (populate relationships)
   /* if (params.constraints?.category) {
@@ -111,10 +148,18 @@ export const fetchProductsModel: ModelFunctionParamType<
   // Images are always included (embedded in product)
   const result = await queryBuilder.lean().exec();
 
+  // console.log("Result: ", result);
+
   let nextCursor: string | null = null;
   if (result.length > limit) {
     const nextItem = result.pop();
-    nextCursor = nextItem?.product_id ?? null;
+    if (nextItem && nextItem.createdAt && nextItem._id) {
+      const cursorData = {
+        c: new Date(nextItem.createdAt).getTime(),
+        p: nextItem._id.toString(),
+      };
+      nextCursor = Buffer.from(JSON.stringify(cursorData)).toString("base64");
+    }
   }
 
   // Transform result to match ProductTblType structure
@@ -129,6 +174,14 @@ export const fetchProductsModel: ModelFunctionParamType<
       variation_options: item.variation_options || [],
     })
   );
+
+  /*   console.log(
+    "transformedResult",
+    transformedResult.map((r) => ({
+      _id: r._id?.toString(),
+      product_id: r.product_id,
+    }))
+  ); */
 
   logger.info(`Fetch all products completed`, {
     source,
@@ -182,9 +235,9 @@ export const fetchSingleProductModel: ModelFunctionParamType<
     });
   }
 
-  const result = await queryBuilder.lean().exec();
+  const response = await queryBuilder.lean().exec();
 
-  if (!result) {
+  if (!response) {
     throw new CustomError({
       data: null,
       errorMessage: "Product not found",
@@ -193,11 +246,13 @@ export const fetchSingleProductModel: ModelFunctionParamType<
     });
   }
 
+  const { category_id, brand_id, ...result } = response;
+
   // Transform result to match ProductTblType structure
   const transformedResult = {
     ...result,
-    category: result.category_id || null,
-    brand: result.brand_id || null,
+    category: category_id || null,
+    brand: brand_id || null,
     images: result.images || [],
     has_variants: result.has_variants || false,
     variants: result.variants || [],

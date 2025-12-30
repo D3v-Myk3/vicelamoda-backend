@@ -1,8 +1,8 @@
 import { StatusCodes } from "http-status-codes";
+import mongoose from "mongoose";
 import { logger } from "../configs/logger.configs";
 import { defaultError, handleErrors } from "../helpers/error.helpers";
 import { generateSKU } from "../helpers/sku.helpers";
-import { BrandModel } from "../models/mongoose/Brand.model";
 import { CategoryModel } from "../models/mongoose/Category.model";
 import { ProductModel, ProductSize } from "../models/mongoose/Product.model";
 import {
@@ -14,16 +14,41 @@ import { CreateProductFormType } from "../schemas/product.zod.schemas";
 import { CustomError, DefaultErrorReturn } from "../types/error.types";
 import { ServiceFunctionParamType } from "../types/general.types";
 import {
-  allowedProductSizeVariation,
   CreateProductType,
   FetchProductByBarcodeType,
   FetchProductsType,
   FetchSingleProductType,
   ProductTblType,
-  sizeVariations,
   UpdateProductServiceParam,
 } from "../types/product.type";
-import { StoreTblType } from "../types/store.types";
+
+/**
+ * Helper function to filter product data before returning to the user.
+ * It removes sensitive information like cost_price.
+ */
+const filterProductData = (products: ProductTblType[]): ProductTblType[] => {
+  return products.map((product) => {
+    // Clone to avoid mutating original if necessary, but lean() already gives us a POJO usually.
+    const filteredProduct = { ...product };
+
+    // Remove sensitive root fields
+    delete (filteredProduct as any).cost_price;
+
+    // Remove sensitive fields from variants
+    if (filteredProduct.variants) {
+      filteredProduct.variants = filteredProduct.variants.map((variant) => ({
+        ...variant,
+        materials: variant.materials.map((material) => {
+          const filteredMaterial = { ...material };
+          delete (filteredMaterial as any).cost_price;
+          return filteredMaterial;
+        }),
+      })) as any;
+    }
+
+    return filteredProduct;
+  }) as ProductTblType[];
+};
 
 export const createProductService: ServiceFunctionParamType<
   CreateProductType | CreateProductFormType,
@@ -35,11 +60,12 @@ export const createProductService: ServiceFunctionParamType<
   });
   const params = arg as CreateProductType;
 
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
-    const store_id =
-      (manager_data?.store as StoreTblType)?._id ?? params.store_id;
     // Validate brand_id exists
-    const brand = await BrandModel.findOne({
+    /* const brand = await BrandModel.findOne({
       brand_id: params.brand_id,
     })
       .lean()
@@ -57,11 +83,28 @@ export const createProductService: ServiceFunctionParamType<
         source: `${source} (STAGE 1)`,
         status: StatusCodes.BAD_REQUEST,
       });
-    }
+    } */
+
+    // Fetch stores
+    /* const stores = await StoreModel.find().lean().exec();
+
+    if (!stores) {
+      logger.warn(`Stores not found`, {
+        source: `${source} (STAGE 1)`,
+        category_id: params.category_id,
+        status: StatusCodes.BAD_REQUEST,
+      });
+      throw new CustomError({
+        data: null,
+        errorMessage: `Stores not found`,
+        source: `${source} (STAGE 1)`,
+        status: StatusCodes.BAD_REQUEST,
+      });
+    } */
 
     // Validate category_id exists
     const category = await CategoryModel.findOne({
-      category_id: params.category_id,
+      _id: params.category_id,
     })
       .lean()
       .exec();
@@ -82,7 +125,7 @@ export const createProductService: ServiceFunctionParamType<
 
     // Generate Base SKU (for the product document)
     // If variants exist, this is the "parent" SKU. If not, it's the simple product SKU.
-    const baseSku = generateSKU(brand.abbreviation, category.abbreviation);
+    const baseSku = generateSKU(category.abbreviation);
 
     let productData: CreateProductType = {
       name: params.name,
@@ -90,14 +133,22 @@ export const createProductService: ServiceFunctionParamType<
       description: params.description ?? null,
       unit: params.unit ?? "pcs",
       category_id: params.category_id ?? null,
-      brand_id: params.brand_id ?? null,
-      selling_price: Number(params.selling_price) || 0,
+      // store_id: params.store_id,
+      // brand_id: params.brand_id ?? null,
       cost_price: Number(params.cost_price) || 0,
+      selling_price: Number(params.selling_price) || 0,
       quantity_in_stock: Number(params.quantity_in_stock) || 0,
       has_variants: false,
       variants: [],
       images: [],
-    };
+      stocks:
+        params.stocks && params.stocks.length > 0
+          ? params.stocks.map((s) => ({
+              store_id: s.store_id as any,
+              stock: Number(s.stock) || 0,
+            }))
+          : [],
+    } as any;
 
     // Handle Images
     if (params.images && Array.isArray(params.images) && params.images.length) {
@@ -110,51 +161,34 @@ export const createProductService: ServiceFunctionParamType<
     // Handle Variants
     if (params.size_variation && params.size_variation.length > 0) {
       productData.has_variants = true;
-
-      for (const sizeData of params.size_variation) {
-        if (
-          !allowedProductSizeVariation.includes(sizeData.size as ProductSize)
-        ) {
-          logger.warn(`Invalid size variation`, {
-            source: `${source} (STAGE 1)`,
-            size_variation: params.size_variation,
-            status: StatusCodes.BAD_REQUEST,
-          });
-          throw new CustomError({
-            data: null,
-            errorMessage: `Invalid size variation "${sizeData.size}". Allowed values are ${allowedProductSizeVariation.join(
-              ", "
-            )}.`,
-            source: `${source} (STAGE 1)`,
-            status: StatusCodes.BAD_REQUEST,
-          });
-        }
-
-        const sizeInfo = sizeVariations[sizeData.size as ProductSize];
-
-        // Generate Variant SKU
-        // We can let the model pre-save hook handle it if we trust it, but pre-generating usually safer for logging/debug.
-        // However, the model hook logic I wrote earlier generates SKU if missing.
-        // Let's rely on the model or simplistic generation here.
-        // Model logic: [productSKU, size, attributes].join("-")
-        // We'll pass the size and let the model hook finalize the SKU if needed, OR generate it here.
-        // Let's generate it here to be explicit and control uniqueness check if needed.
-        // Actually, let's leave SKU empty or minimal and let the model middleware do the heavy lifting as per your provided schema logic?
-        // Your schema logic: if (!variant.sku) variant.sku = generateVariantSKU(...)
-        // So I will just provide the necessary fields.
-
-        productData.variants.push({
-          size: sizeInfo.db_value,
-          price: Number(sizeData.selling_price) || 0,
-          stock: [{ store_id: store_id!, quantity: 0 }], // Default 0, can be updated via supply
-          attributes: sizeData.attributes, // Future: Add color etc. here
+      productData.variants = params.size_variation.map((sizeData) => ({
+        size: sizeData.size as ProductSize,
+        sku: "", // Will be auto-generated by model middleware
+        materials: sizeData.materials.map((mat) => ({
+          name: mat.name,
           sku: "", // Will be auto-generated by model middleware
-        });
-      }
+          price: Number(mat.price) || 0,
+          cost_price: mat.cost_price ? Number(mat.cost_price) : undefined,
+          colors: mat.colors.map((color) => ({
+            name: color.name,
+            sku: "", // Will be auto-generated by model middleware
+            image_url: color.image_url || undefined,
+            stocks:
+              color.stocks && color.stocks.length > 0
+                ? color.stocks.map((st) => ({
+                    store_id: st.store_id as any,
+                    stock: Number(st.stock) || 0,
+                  }))
+                : [],
+          })),
+        })),
+      }));
     } else {
       // Simple product
-      productData.size = ProductSize.STANDARD;
+      productData.has_variants = false;
     }
+
+    console.log(productData);
 
     const createdProduct = await ProductModel.create(productData);
 
@@ -163,6 +197,9 @@ export const createProductService: ServiceFunctionParamType<
       status: StatusCodes.CREATED,
       product_id: createdProduct.product_id,
     });
+
+    session.commitTransaction();
+    // session.endSession();
 
     return {
       data: {
@@ -174,6 +211,8 @@ export const createProductService: ServiceFunctionParamType<
       status: StatusCodes.CREATED,
     };
   } catch (error: CustomError | unknown) {
+    session.abortTransaction();
+
     logger.info(`Error in product creation`, {
       source: `${source} (ERROR)`,
       personnel: admin_data?.email || manager_data?.email,
@@ -188,6 +227,8 @@ export const createProductService: ServiceFunctionParamType<
     } else {
       return defaultError(`${source} (ERROR)`, error as string);
     }
+  } finally {
+    session.endSession();
   }
 };
 
@@ -221,7 +262,7 @@ export const fetchProductsService: ServiceFunctionParamType<
 
     return {
       data: {
-        data: response.data as ProductTblType[],
+        data: filterProductData(response.data as ProductTblType[]),
         pagination: response.pagination,
         message: "Products fetched successfully",
       },
@@ -241,7 +282,7 @@ export const fetchProductsService: ServiceFunctionParamType<
 export const fetchProductByBarcodeService: ServiceFunctionParamType<
   FetchProductByBarcodeType,
   ProductTblType
-> = async (params) => {
+> = async (params, { admin_data }) => {
   const source = "FETCH PRODUCT BY BARCODE SERVICE";
   logger.info("Starting fetchProductByBarcodeService", {
     body: params,
@@ -268,7 +309,9 @@ export const fetchProductByBarcodeService: ServiceFunctionParamType<
 
     return {
       data: {
-        data: response.data as ProductTblType,
+        data: admin_data
+          ? response.data
+          : filterProductData([response.data as ProductTblType])[0],
         message: "Product fetched successfully",
       },
       errorMessage: null,
@@ -287,14 +330,17 @@ export const fetchProductByBarcodeService: ServiceFunctionParamType<
 export const fetchSingleProductService: ServiceFunctionParamType<
   FetchSingleProductType,
   ProductTblType
-> = async (params) => {
+> = async (params, { admin_data }) => {
   const source = "FETCH SINGLE PRODUCT SERVICE";
   logger.info("Starting fetchSingleProductService", {
     body: params,
   });
 
   try {
-    const response = await fetchSingleProductModel(params, {});
+    const response = await fetchSingleProductModel(
+      { ...params, constraints: { category: true } },
+      {}
+    );
 
     if (response.errorMessage || response.status >= 300) {
       throw new CustomError({
@@ -312,9 +358,13 @@ export const fetchSingleProductService: ServiceFunctionParamType<
       status: StatusCodes.OK,
     });
 
+    console.log(response);
+
     return {
       data: {
-        data: response.data as ProductTblType,
+        data: admin_data
+          ? response.data
+          : filterProductData([response.data as ProductTblType])[0],
         message: "Product fetched successfully",
       },
       errorMessage: null,
@@ -340,7 +390,7 @@ export const updateProductService: ServiceFunctionParamType<
   });
 
   try {
-    const product = await ProductModel.findOne({ product_id });
+    const product = await ProductModel.findOne({ _id: product_id });
 
     if (!product) {
       throw new CustomError({
@@ -360,58 +410,39 @@ export const updateProductService: ServiceFunctionParamType<
     if (update_data.status) product.status = update_data.status as any;
 
     if (update_data.cost_price !== undefined)
-      product.cost_price = Number(update_data.cost_price);
+      product.cost_price = update_data.has_variants
+        ? 0
+        : Number(update_data.cost_price);
     if (update_data.selling_price !== undefined)
-      product.selling_price = Number(update_data.selling_price);
+      product.selling_price = update_data.has_variants
+        ? 0
+        : Number(update_data.selling_price);
 
     // Handle Variants Update
     if (update_data.size_variation && update_data.size_variation.length > 0) {
-      // Ensure has_variants is true if we are adding variants
       product.has_variants = true;
 
-      for (const varInput of update_data.size_variation) {
-        const sizeInfo = sizeVariations[varInput.size as ProductSize];
-        const existingVariantIndex = product.variants.findIndex(
-          (v) => v.size === sizeInfo.db_value
-        );
-
-        if (existingVariantIndex > -1) {
-          // Update existing variant
-          product.variants[existingVariantIndex].price = Number(
-            varInput.selling_price
-          );
-          if (varInput.attributes) {
-            product.variants[existingVariantIndex].attributes =
-              varInput.attributes;
-          }
-          // Note: Stock is typically not updated here, but via supply/sales.
-        } else {
-          // Add new variant
-          // We rely on pre-save hook for SKU generation if we pass limited data,
-          // but our interface requires strict typing.
-          // Let's create the variant structure.
-          /* const newVariant: any = {
-            size: sizeInfo.db_value,
-            price: Number(varInput.selling_price),
-            sku: "", // will be generated
-            stock: 0,
-            stocks: [], // Initialize empty store stocks
-            attributes: varInput.attributes || [],
-            status: "active",
-          }; */
-
-          // Using the user's defined structure or Mongoose push
-          product.variants.push({
-            size: sizeInfo.db_value,
-            price: Number(varInput.selling_price),
-            sku: "", // Hook generates this
-            attributes: varInput.attributes || [],
-            stocks: [], // Hook/logic handles this? User added stock: {store_id, qty}[]
-            // We initialize with empty stock for new variants in update
-            status: "active",
-          } as any);
-        }
-      }
+      // Simplification: In a real-world scenario, you might want deep reconciliation.
+      // For now, we'll map the incoming hierarchical data.
+      product.variants = update_data.size_variation.map((sizeData) => ({
+        size: sizeData.size as ProductSize,
+        sku: "", // Will be auto-generated
+        materials: sizeData.materials.map((mat) => ({
+          name: mat.name,
+          sku: "", // Will be auto-generated
+          price: Number(mat.price) || 0,
+          cost_price: mat.cost_price ? Number(mat.cost_price) : undefined,
+          colors: mat.colors.map((color) => ({
+            name: color.name,
+            sku: "", // Will be auto-generated
+            image_url: color.image_url || undefined,
+            stocks: color.stocks.map((st) => ({
+              store_id: st.store_id,
+              stock: Number(st.stock) || 0,
+            })),
+          })),
+        })),
+      })) as any;
     }
 
     // Handle Image Updates if provided (Replace or Append? Usually replace is safer for simplified API)
@@ -437,12 +468,57 @@ export const updateProductService: ServiceFunctionParamType<
     });
 
     // Re-fetch to get clean object
-    const updatedProduct = await ProductModel.findOne({ product_id });
+    const updatedProduct = await ProductModel.findOne({ _id: product_id });
 
     return {
       data: {
         data: updatedProduct as unknown as ProductTblType,
         message: "Product updated successfully",
+      },
+      errorMessage: null,
+      source,
+      status: StatusCodes.OK,
+    };
+  } catch (error: CustomError | unknown) {
+    if (error instanceof CustomError || error instanceof Error) {
+      return handleErrors({ error, source }) as DefaultErrorReturn;
+    } else {
+      return defaultError(source, String(error));
+    }
+  }
+};
+export const deleteProductService: ServiceFunctionParamType<
+  string,
+  null
+> = async (product_id, { admin_data, manager_data }) => {
+  const source = "DELETE PRODUCT SERVICE";
+  logger.info("Starting deleteProductService", {
+    product_id,
+  });
+
+  try {
+    const product = await ProductModel.findOneAndDelete({ _id: product_id });
+
+    if (!product) {
+      throw new CustomError({
+        data: null,
+        errorMessage: "Product not found",
+        source,
+        status: StatusCodes.BAD_REQUEST,
+      });
+    }
+
+    logger.info(`Product deleted successfully`, {
+      source,
+      product_id,
+      personnel: admin_data?.email || manager_data?.email,
+      status: StatusCodes.OK,
+    });
+
+    return {
+      data: {
+        data: null,
+        message: "Product deleted successfully",
       },
       errorMessage: null,
       source,

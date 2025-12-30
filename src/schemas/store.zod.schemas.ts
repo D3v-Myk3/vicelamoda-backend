@@ -5,7 +5,10 @@ export const createStoreZodSchema = z.strictObject({
   code: z.string().optional(),
   address: z.string().optional(),
   phone: z.string().optional(),
-  manager_id: z.string().optional(),
+  manager_id: z
+    .string()
+    .optional()
+    .transform((val) => (val === "" ? undefined : val)),
 });
 
 export const updateStoreZodSchema = createStoreZodSchema.partial();

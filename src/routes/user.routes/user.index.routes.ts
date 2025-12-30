@@ -3,10 +3,7 @@ import { header } from "express-validator";
 import { handleValidationErrors } from "../../helpers/error.helpers";
 // import adminSalesRoutes from "./admin.sales.routes";
 import { userAuthMiddleware } from "../../middlewares/auth/user.auth";
-import brandRoutes from "../brand.routes";
-import categoryRoutes from "../category.routes";
-import orderRoutes from "../order.routes";
-import searchRoutes from "../search.routes";
+import { orderRoutes } from "../order.routes";
 import wishlistRoutes from "../wishlist.routes";
 import userProfileRoutes from "./user.profile.routes";
 
@@ -26,11 +23,11 @@ userRoutes.use(
 );
 
 // userRoutes.use("/products", productRoutes);
-userRoutes.use("/categories", categoryRoutes);
-userRoutes.use("/brands", brandRoutes);
+// userRoutes.use("/categories", categoryRoutes);
+// userRoutes.use("/brands", brandRoutes);
 userRoutes.use("/orders", orderRoutes);
 userRoutes.use("/profile", userProfileRoutes);
-userRoutes.use("/search", searchRoutes);
+// userRoutes.use("/search", searchRoutes);
 userRoutes.use("/wishlist", wishlistRoutes);
 
 export default userRoutes;

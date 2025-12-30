@@ -31,6 +31,9 @@ export const blockIPMiddleware = (
 export const configureCors = () => {
   const allowedOrigins = [
     "http://localhost:8080",
+    "http://192.168.0.5:3000",
+    "https://vicelamoda-v0-git-dev-d3v-myk3s-projects.vercel.app",
+    "https://vicelamoda-v0-git-test-d3v-myk3s-projects.vercel.app",
     // "https://fjwnqc0d-3000.uks1.devtunnels.ms",
     CLIENT_DOMAIN,
     "https://l3hbgspw-3000.uks1.devtunnels.ms",

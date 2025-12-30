@@ -25,14 +25,14 @@ export const createOrderController = async (
       path: req.originalUrl,
       ip: req.ip,
     });
-    const { customer_data } = res.locals;
+    const { user_data } = res.locals;
     const params = {
       ...req.body,
-      user_id: customer_data?.user_id || req.body.user_id,
+      user_id: user_data?.user_id || req.body.user_id,
     };
 
     const response = await createOrderService(params, {
-      user_data: customer_data,
+      user_data,
     });
 
     if (!response.data || response.errorMessage || response.status >= 300) {

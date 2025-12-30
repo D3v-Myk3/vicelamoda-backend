@@ -20,7 +20,7 @@ import { seedAdmin, seedAllShopData } from "../utils/seed.utils";
     session.commitTransaction();
     logger.info("✅ Seeding completed successfully!");
   } catch (error) {
-    console.log(error);
+    // console.log(error);
 
     session.abortTransaction();
     logger.error("❌ Seeding failed:", error);

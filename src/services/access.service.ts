@@ -1,3 +1,4 @@
+import console from "console";
 import { StatusCodes } from "http-status-codes";
 import jwt from "jsonwebtoken";
 import {
@@ -65,6 +66,7 @@ export const userRegistrationService: ServiceFunctionParamType<
     const register_user_response = await UserModel.create({
       fullname: params.fullname,
       email: params.email,
+      phone: params.phone,
       password: hashedPassword,
       role: "CUSTOMER",
       store_id: params.store_id ?? undefined,
@@ -153,9 +155,9 @@ export const userLoginService: ServiceFunctionParamType<
       .lean()
       .exec();
 
-    const { store: user_store, ...rest } = response as unknown as UserTblType;
+    console.log(response);
 
-    if (!rest) {
+    if (!response) {
       logger.info(`Email verification failed`, {
         source: `${source} (STAGE 1)`,
         params,
@@ -169,10 +171,13 @@ export const userLoginService: ServiceFunctionParamType<
         status: StatusCodes.BAD_REQUEST,
       });
     }
+    const { password, ...rest } = response as unknown as UserTblType;
+    console.log(rest);
+    const user_store = rest.store ? rest.store : undefined;
 
     const verifyPassword = await argon2ComparePassword(
       params.password,
-      rest.password
+      password
     );
 
     if (!verifyPassword) {
@@ -209,23 +214,34 @@ export const userLoginService: ServiceFunctionParamType<
     });
 
     const accessToken = jwt.sign(
-      { user_id: rest._id, role: rest.role },
+      { user_id: rest._id.toString(), role: rest.role },
       JWT_ACCESS_KEY!,
       { algorithm: JWT_ALGORITHM!, expiresIn: ACCESS_TOKEN_EXPIRY }
     );
 
     logger.info(`Generating refresh token`, {
       source: `${source} (REFRESH TOKEN GENERATION)`,
-      user_id: rest._id,
+      user_id: rest._id.toString(),
     });
 
     const refreshToken = jwt.sign(
-      { user_id: rest._id, role: rest.role },
+      { user_id: rest._id.toString(), role: rest.role },
       REFRESH_TOKEN_KEY!,
       { algorithm: JWT_ALGORITHM!, expiresIn: REFRESH_TOKEN_EXPIRY }
     );
 
+    logger.info(`Generated access and refresh tokens`, {
+      source: `${source} (TOKEN GENERATION)`,
+      email: params.email,
+    });
     // Fetch stores based on role
+    /* if (rest.role === "ADMIN") {
+      await StoreModel.updateMany(
+        { manager_id: "" },
+        { $set: { manager_id: null } }
+      );
+    } */
+
     const storeResponse =
       rest.role === "ADMIN"
         ? await StoreModel.find()
