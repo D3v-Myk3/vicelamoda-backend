@@ -34,6 +34,12 @@ export const userLoginZodSchema = z.strictObject({
 // ✅ Infer type from Zod schema
 export type UserLoginFormType = z.infer<typeof userLoginZodSchema>;
 
+// ✅ Firebase Auth schema
+export const firebaseAuthZodSchema = z.strictObject({
+  idToken: z.string().min(1, "ID Token is required"),
+});
+export type FirebaseAuthType = z.infer<typeof firebaseAuthZodSchema>;
+
 /***********************************/
 /** RECEPTION SECTION STARTS HERE **/
 /***********************************/

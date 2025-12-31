@@ -1,5 +1,7 @@
 onlyBuiltDependencies:
-  - "@prisma/client"
-  - "@prisma/engines"
+  - '@firebase/util'
+  - '@prisma/client'
+  - '@prisma/engines'
   - argon2
   - prisma
+  - protobufjs

@@ -3,8 +3,10 @@ import {
   userLoginController,
   userRegistrationController,
 } from "../../controllers/access.controller";
+import { firebaseAuthController } from "../../controllers/firebase-auth.controller";
 import { Zod_ValidationMiddleware } from "../../middlewares/validations/zod.validation.middleware";
 import {
+  firebaseAuthZodSchema,
   userLoginZodSchema,
   userRegistrationZodSchema,
 } from "../../schemas/access.zod.schemas";
@@ -27,6 +29,15 @@ userAccessRoutes.post(
     source: "User login",
   }),
   userLoginController
+);
+
+userAccessRoutes.post(
+  "/firebase-auth",
+  Zod_ValidationMiddleware({
+    schema: firebaseAuthZodSchema,
+    source: "Firebase Auth",
+  }),
+  firebaseAuthController
 );
 
 export default userAccessRoutes;

@@ -89,5 +89,14 @@ export const ARGON2_MEMORY_COST = process.env.ARGON2_MEMORY_COST as
   | string;
 export const ARGON2_TIME_COST = process.env.ARGON2_TIME_COST as number | string;
 
+/* Firebase Configurations */
+export const FIREBASE_PROJECT_ID = process.env.FIREBASE_PROJECT_ID as string;
+const RAW_FIREBASE_CLIENT_EMAIL = process.env.FIREBASE_CLIENT_EMAIL as string;
+export const FIREBASE_CLIENT_EMAIL = RAW_FIREBASE_CLIENT_EMAIL.replace(
+  /\\n/g,
+  "\n"
+);
+export const FIREBASE_PRIVATE_KEY = process.env.FIREBASE_PRIVATE_KEY as string;
+
 // AI / LLM configuration (re-exported from a dedicated AI config)
 export { DEFAULT_AI_MODEL, ENABLE_CLAUDE_FOR_ALL_CLIENTS } from "./ai.config";
