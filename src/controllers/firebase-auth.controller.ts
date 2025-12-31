@@ -13,7 +13,7 @@ export const firebaseAuthController = async (
   req: CustomRequest<unknown, unknown, { idToken: string }, unknown>,
   res: CustomResponse<Token<Partial<UserTblType>> | null>
 ): Promise<void> => {
-  const source = "FIREBASE AUTH CONTROLLER";
+  // const source = "FIREBASE AUTH CONTROLLER";
 
   try {
     logger.info("Starting firebaseAuthController", {

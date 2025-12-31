@@ -30,7 +30,7 @@ export const firebaseAuthService: ServiceFunctionParamType<
   try {
     // 1. Verify Firebase ID Token
     const decodedToken = await firebaseAuth.verifyIdToken(params.idToken);
-    const { email, name, picture, uid } = decodedToken;
+    const { email, name, uid } = decodedToken;
 
     if (!email) {
       throw new CustomError({
