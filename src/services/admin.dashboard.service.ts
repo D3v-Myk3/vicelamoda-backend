@@ -213,7 +213,7 @@ export const getDashboardStatsService: ServiceFunctionParamType<
         (order.user as any)?.fullname ||
         "Guest",
       amount: `${order.total_amount}`,
-      status: order.fulfillment_status.toLowerCase(),
+      status: order.status.toLowerCase(),
       date: new Date(order.createdAt).toLocaleDateString("en-US", {
         month: "short",
         day: "numeric",

@@ -13,10 +13,9 @@ import { generateSKU } from "../helpers/sku.helpers";
 import { BrandModel } from "../models/mongoose/Brand.model";
 import { CategoryModel } from "../models/mongoose/Category.model";
 import {
-  FulfillmentStatus,
   OrderModel,
+  OrderStatus,
   PaymentMethod,
-  PaymentStatus,
 } from "../models/mongoose/Order.model";
 import {
   calculateTotalStock,
@@ -420,54 +419,36 @@ export const seedOrders = async () => {
 
   const orderScenarios = [
     {
-      status: FulfillmentStatus.DELIVERED,
-      payment: PaymentStatus.COMPLETED,
-      method: PaymentMethod.STRIPE,
+      status: OrderStatus.DELIVERED,
+      method: PaymentMethod.ONLINE,
     },
     {
-      status: FulfillmentStatus.PROCESSING,
-      payment: PaymentStatus.COMPLETED,
-      method: PaymentMethod.PAYMEO,
+      status: OrderStatus.PROCESSING,
+      method: PaymentMethod.ONLINE,
     },
     {
-      status: FulfillmentStatus.PENDING,
-      payment: PaymentStatus.PENDING,
+      status: OrderStatus.AWAITING_PAYMENT,
       method: PaymentMethod.CASH_ON_DELIVERY,
     },
     {
-      status: FulfillmentStatus.SHIPPED,
-      payment: PaymentStatus.COMPLETED,
-      method: PaymentMethod.STRIPE,
+      status: OrderStatus.SHIPPED,
+      method: PaymentMethod.ONLINE,
     },
     {
-      status: FulfillmentStatus.CANCELLED,
-      payment: PaymentStatus.FAILED,
-      method: PaymentMethod.STRIPE,
+      status: OrderStatus.CANCELLED,
+      method: PaymentMethod.ONLINE,
     },
     {
-      status: FulfillmentStatus.DELIVERED,
-      payment: PaymentStatus.COMPLETED,
+      status: OrderStatus.DELIVERED,
       method: PaymentMethod.CASH_ON_DELIVERY,
     },
     {
-      status: FulfillmentStatus.PROCESSING,
-      payment: PaymentStatus.PENDING,
-      method: PaymentMethod.BANK_TRANSFER,
+      status: OrderStatus.PROCESSING,
+      method: PaymentMethod.ONLINE,
     },
     {
-      status: FulfillmentStatus.PENDING,
-      payment: PaymentStatus.PENDING,
-      method: PaymentMethod.PAYMEO,
-    },
-    {
-      status: FulfillmentStatus.SHIPPED,
-      payment: PaymentStatus.COMPLETED,
-      method: PaymentMethod.STRIPE,
-    },
-    {
-      status: FulfillmentStatus.DELIVERED,
-      payment: PaymentStatus.COMPLETED,
-      method: PaymentMethod.STRIPE,
+      status: OrderStatus.INITIATED,
+      method: PaymentMethod.ONLINE,
     },
   ];
 
@@ -521,8 +502,7 @@ export const seedOrders = async () => {
       items: orderItems,
       total_amount: totalAmount,
       payment_method: scenario.method,
-      payment_status: scenario.payment,
-      fulfillment_status: scenario.status,
+      status: scenario.status,
       createdAt: new Date(
         Date.now() - Math.random() * 60 * 24 * 60 * 60 * 1000
       ), // Last 60 days
@@ -531,9 +511,6 @@ export const seedOrders = async () => {
   }
 
   logger.info("Orders seeded", { source, count });
-  /* } catch (error) {
-    logger.error("Error seeding orders", { source, error });
-  } */
 };
 
 /* -------------------------------------------------------------------------- */
@@ -652,9 +629,8 @@ export const seedVariantOrders = async () => {
       },
       items: orderItems,
       total_amount: totalAmount,
-      payment_method: PaymentMethod.STRIPE,
-      payment_status: PaymentStatus.COMPLETED,
-      fulfillment_status: FulfillmentStatus.PROCESSING,
+      payment_method: PaymentMethod.ONLINE,
+      status: OrderStatus.PAID,
     });
     count++;
   }

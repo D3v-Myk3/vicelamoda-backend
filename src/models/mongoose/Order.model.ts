@@ -2,22 +2,14 @@ import mongoose, { Document, Schema } from "mongoose";
 import { IUser } from "./User.model";
 
 export enum PaymentMethod {
-  STRIPE = "STRIPE",
-  PAYMEO = "PAYMEO",
-  CARD = "CARD",
+  ONLINE = "ONLINE",
   CASH_ON_DELIVERY = "CASH_ON_DELIVERY",
-  BANK_TRANSFER = "BANK_TRANSFER",
 }
 
-export enum PaymentStatus {
-  COMPLETED = "COMPLETED",
-  PENDING = "PENDING",
-  FAILED = "FAILED",
-  AWAITING_BANK_TRANSFER = "AWAITING_BANK_TRANSFER",
-}
-
-export enum FulfillmentStatus {
-  PENDING = "PENDING",
+export enum OrderStatus {
+  INITIATED = "INITIATED",
+  AWAITING_PAYMENT = "AWAITING_PAYMENT",
+  PAID = "PAID",
   PROCESSING = "PROCESSING",
   SHIPPED = "SHIPPED",
   DELIVERED = "DELIVERED",
@@ -53,9 +45,7 @@ export interface IOrder extends Document {
   items: IOrderItem[];
   total_amount: number;
   payment_method: PaymentMethod;
-  payment_status: PaymentStatus;
-  fulfillment_status: FulfillmentStatus;
-  stripe_payment_intent_id?: string;
+  status: OrderStatus;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -133,23 +123,15 @@ const OrderSchema = new Schema<IOrder>(
     payment_method: {
       type: String,
       enum: Object.values(PaymentMethod),
-      default: PaymentMethod.PAYMEO,
       required: true,
       index: true,
     },
-    payment_status: {
+    status: {
       type: String,
-      enum: Object.values(PaymentStatus),
-      default: PaymentStatus.PENDING,
+      enum: Object.values(OrderStatus),
+      default: OrderStatus.INITIATED,
       index: true,
     },
-    fulfillment_status: {
-      type: String,
-      enum: Object.values(FulfillmentStatus),
-      default: FulfillmentStatus.PENDING,
-      index: true,
-    },
-    stripe_payment_intent_id: String,
   },
   {
     timestamps: true,
@@ -161,30 +143,17 @@ const OrderSchema = new Schema<IOrder>(
 
 /* ===================== VIRTUALS ===================== */
 
-/* OrderSchema.virtual("user", {
-  ref: "User",
-  localField: "user_id",
-  foreignField: "user_id",
-  justOne: true,
-}); */
+OrderSchema.virtual("transactions", {
+  ref: "Transaction",
+  localField: "order_id",
+  foreignField: "order_id",
+});
 
-/* OrderSchema.virtual("store", {
-  ref: "Store",
-  localField: "store_id",
-  foreignField: "store_id",
-  justOne: true,
-}); */
-
-// OrderSchema.index({ user_id: 1 });
-// OrderSchema.index({ payment_method: 1 });
-// OrderSchema.index({ payment_status: 1 });
-// OrderSchema.index({ fulfillment_status: 1 });
 OrderSchema.index({ createdAt: -1 });
 OrderSchema.index({ "shipping_address.email": 1 });
 OrderSchema.index({ "shipping_address.zip_code": 1 });
 
 // Composite Indexes
 OrderSchema.index({ user_id: 1, createdAt: -1 });
-// OrderSchema.index({ store_id: 1, createdAt: -1 });
 
 export const OrderModel = mongoose.model<IOrder>("Order", OrderSchema);

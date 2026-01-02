@@ -62,18 +62,18 @@ export enum ProductSize {
 }
 
 export enum ProductStatus {
-  active = "active",
-  inactive = "inactive",
+  ACTIVE = "ACTIVE",
+  INACTIVE = "INACTIVE",
 }
 
 export enum Unit {
-  pcs = "pcs",
-  ml = "ml",
-  ltr = "ltr",
-  g = "g",
-  kg = "kg",
-  pack = "pack",
-  box = "box",
+  PCS = "PCS",
+  ML = "ML",
+  LTR = "LTR",
+  G = "G",
+  KG = "KG",
+  PACK = "PACK",
+  BOX = "BOX",
 }
 
 /* ===================== PRODUCT IMAGES ===================== */
@@ -251,7 +251,7 @@ const ProductSchema = new Schema<IProduct>(
     unit: {
       type: String,
       enum: Object.values(Unit),
-      default: Unit.pcs,
+      default: Unit.PCS,
     },
 
     stocks: { type: [StoreStockSchema], default: [] },
@@ -259,7 +259,7 @@ const ProductSchema = new Schema<IProduct>(
     status: {
       type: String,
       enum: Object.values(ProductStatus),
-      default: ProductStatus.active,
+      default: ProductStatus.ACTIVE,
       index: true,
     },
 

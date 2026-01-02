@@ -8,8 +8,8 @@
       "cost_price": 25000.0,
       "selling_price": 65000.0,
       "quantity_in_stock": 0,
-      "unit": "pcs",
-      "status": "active",
+      "unit": "PCS",
+      "status": "ACTIVE",
       "category_id": "cat_cln_face_001",
       "brand_id": "brand_cos_001",
       "images": [
@@ -24,6 +24,7 @@
           "materials": [
             {
               "name": "Pure Silk",
+              "cost_price": 25000.0,
               "price": 85000.0,
               "colors": [
                 {
@@ -42,6 +43,7 @@
             },
             {
               "name": "Silk Blend",
+              "cost_price": 25000.0,
               "price": 65000.0,
               "colors": [
                 {
@@ -59,6 +61,7 @@
           "materials": [
             {
               "name": "Pure Silk",
+              "cost_price": 25000.0,
               "price": 90000.0,
               "colors": [
                 {
@@ -81,8 +84,8 @@
       "cost_price": 120000.0,
       "selling_price": 299000.0,
       "quantity_in_stock": 0,
-      "unit": "pcs",
-      "status": "active",
+      "unit": "PCS",
+      "status": "ACTIVE",
       "category_id": "cat_cln_body_002",
       "brand_id": "brand_cos_002",
       "images": [
@@ -97,6 +100,7 @@
           "materials": [
             {
               "name": "Nappa Leather",
+              "cost_price": 25000.0,
               "price": 299000.0,
               "colors": [
                 {
@@ -114,6 +118,7 @@
           "materials": [
             {
               "name": "Nappa Leather",
+              "cost_price": 25000.0,
               "price": 310000.0,
               "colors": [
                 {
@@ -132,6 +137,7 @@
             },
             {
               "name": "Suede",
+              "cost_price": 25000.0,
               "price": 275000.0,
               "colors": [
                 {
