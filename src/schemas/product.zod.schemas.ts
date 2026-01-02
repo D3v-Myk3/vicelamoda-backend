@@ -1,15 +1,16 @@
 import { z } from "zod";
+import { ProductStatus, Unit } from "../models/mongoose";
 import {
   allowedProductSizeVariation,
   ProductImageUploadType,
 } from "../types/product.type";
 
 // ✅ User registration schema
-export const UnitEnum = z.enum(["pcs"], {
+export const UnitEnum = z.nativeEnum(Unit, {
   error: "Unit is required",
 });
 
-export const ProductStatusEnum = z.enum(["active"], {
+export const ProductStatusEnum = z.nativeEnum(ProductStatus, {
   error: "Product status is required",
 });
 
@@ -100,7 +101,7 @@ export const createProductZodSchema = z
       .nullable()
       .optional(),
 
-    unit: UnitEnum.default("pcs"),
+    unit: UnitEnum.default(Unit.PCS),
 
     // status: ProductStatusEnum.default("active"),
     has_variants: z.boolean().default(false),

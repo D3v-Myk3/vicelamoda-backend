@@ -1,9 +1,5 @@
 import { z } from "zod";
-import {
-  FulfillmentStatus,
-  PaymentMethod,
-  PaymentStatus,
-} from "../models/mongoose/Order.model";
+import { OrderStatus, PaymentMethod } from "../models/mongoose/Order.model";
 
 // ✅ Order creation schema
 export const createOrderZodSchema = z.strictObject({
@@ -38,14 +34,14 @@ export const createOrderZodSchema = z.strictObject({
 });
 export type CreateOrderZodType = z.infer<typeof createOrderZodSchema>;
 
-// ✅ Update order fulfillment schema
-export const updateOrderFulfillmentZodSchema = z.strictObject({
-  fulfillment_status: z.nativeEnum(FulfillmentStatus, {
-    message: "Invalid fulfillment status",
+// ✅ Update order status schema
+export const updateOrderStatusZodSchema = z.strictObject({
+  status: z.nativeEnum(OrderStatus, {
+    message: "Invalid order status",
   }),
 });
-export type UpdateOrderFulfillmentZodType = z.infer<
-  typeof updateOrderFulfillmentZodSchema
+export type UpdateOrderStatusZodType = z.infer<
+  typeof updateOrderStatusZodSchema
 >;
 
 // ✅ Fetch orders query schema
@@ -53,8 +49,7 @@ export const fetchOrdersZodSchema = z.strictObject({
   order_id: z.string().optional(),
   user_id: z.string().optional(),
   payment_method: z.nativeEnum(PaymentMethod).optional(),
-  payment_status: z.nativeEnum(PaymentStatus).optional(),
-  fulfillment_status: z.nativeEnum(FulfillmentStatus).optional(),
+  status: z.nativeEnum(OrderStatus).optional(),
   search: z.string().optional(),
   limit: z.coerce.number().int().positive().optional(),
   cursor: z.string().optional(),

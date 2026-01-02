@@ -3,15 +3,14 @@ import {
   createOrderController,
   fetchOrdersController,
   getOrderDetailsController,
-  markBankTransferAsPaidController,
-  updateOrderFulfillmentController,
+  updateOrderStatusController,
 } from "../controllers/order.controller";
 import { Zod_ValidationMiddleware } from "../middlewares/validations/zod.validation.middleware";
 import {
   createOrderZodSchema,
   fetchOrdersZodSchema,
   orderIdParamZodSchema,
-  updateOrderFulfillmentZodSchema,
+  updateOrderStatusZodSchema,
 } from "../schemas/order.zod.schemas";
 
 /* ================= USER ORDER ROUTES ================= */
@@ -48,27 +47,15 @@ orderRoutes.get(
 export const adminOrderRoutes = Router();
 
 adminOrderRoutes.patch(
-  "/:order_id/fulfillment",
-  // adminAuthMiddleware,
+  "/:order_id/status",
   Zod_ValidationMiddleware({
     schema: orderIdParamZodSchema,
-    source: "Update Order Fulfillment (Params)",
+    source: "Update Order Status (Params)",
     path: "params",
   }),
   Zod_ValidationMiddleware({
-    schema: updateOrderFulfillmentZodSchema,
-    source: "Update Order Fulfillment (Body)",
+    schema: updateOrderStatusZodSchema,
+    source: "Update Order Status (Body)",
   }),
-  updateOrderFulfillmentController
-);
-
-adminOrderRoutes.patch(
-  "/:order_id/mark-paid",
-  // adminAuthMiddleware,
-  Zod_ValidationMiddleware({
-    schema: orderIdParamZodSchema,
-    source: "Mark Bank Transfer as Paid (Params)",
-    path: "params",
-  }),
-  markBankTransferAsPaidController
+  updateOrderStatusController
 );

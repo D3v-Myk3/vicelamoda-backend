@@ -4,10 +4,9 @@ import { logger } from "../configs/logger.configs";
 import { paginationConfig } from "../configs/pagination.config";
 import { defaultError, handleErrors } from "../helpers/error.helpers";
 import {
-  FulfillmentStatus,
   OrderModel,
+  OrderStatus,
   PaymentMethod,
-  PaymentStatus,
 } from "../models/mongoose/Order.model";
 import { ProductModel } from "../models/mongoose/Product.model";
 import { UserModel } from "../models/mongoose/User.model";
@@ -21,6 +20,7 @@ import {
   UpdateOrderResponse,
   UpdateOrderType,
 } from "../types/order.types";
+import { initiateTransaction } from "./transaction.service";
 
 export const createOrderService: ServiceFunctionParamType<
   CreateOrderRequest,
@@ -161,32 +161,35 @@ export const createOrderService: ServiceFunctionParamType<
       await product.save({ session });
     }
 
-    // Determine payment status based on payment method
-    let payment_status: PaymentStatus = PaymentStatus.PENDING;
+    // Determine initial status
+    let initial_status: OrderStatus = OrderStatus.AWAITING_PAYMENT;
     if (params.payment_method === PaymentMethod.CASH_ON_DELIVERY) {
-      payment_status = PaymentStatus.PENDING;
-    } else if (params.payment_method === PaymentMethod.BANK_TRANSFER) {
-      payment_status = PaymentStatus.AWAITING_BANK_TRANSFER;
-    } else if (params.payment_method === PaymentMethod.STRIPE) {
-      payment_status = PaymentStatus.PENDING;
+      initial_status = OrderStatus.PROCESSING;
     }
 
     // Create order
     const [order] = await OrderModel.create(
       [
         {
-          user_id: params.user_id,
+          user_id: params.user_id || user.user_id,
           user: user._id,
           shipping_address: params.shipping_address,
           items: orderItems,
           total_amount,
-          payment_method: params.payment_method,
-          payment_status,
-          fulfillment_status: FulfillmentStatus.PENDING,
+          payment_method: params.payment_method as PaymentMethod,
+          status: initial_status,
         },
       ],
       { session }
     );
+
+    // 4. Initiate Transaction
+    const transaction = await initiateTransaction({
+      order_id: order.order_id,
+      amount: total_amount,
+      email: params.shipping_address.email,
+      payment_method: params.payment_method as PaymentMethod,
+    });
 
     await session.commitTransaction();
 
@@ -195,17 +198,20 @@ export const createOrderService: ServiceFunctionParamType<
         data: {
           order_id: order.order_id,
           total_amount: order.total_amount,
-          payment_status: order.payment_status,
-          fulfillment_status: order.fulfillment_status,
+          status: order.status,
+          transaction_reference: transaction.reference,
           createdAt: order.createdAt,
         },
         message: "Order created successfully",
       },
+
       errorMessage: null,
       source,
       status: StatusCodes.CREATED,
     };
   } catch (error: any) {
+    console.log(error);
+
     await session.abortTransaction();
     logger.error(`Error in createOrderService`, {
       source,
@@ -229,7 +235,7 @@ export const fetchOrdersService: ServiceFunctionParamType<
   logger.info("Starting fetchOrdersService", { body: params });
 
   try {
-    const limit = Number(params.limit) ?? paginationConfig.defaultLimit;
+    const limit = Number(params.limit) || paginationConfig.defaultLimit;
     const cursor = params.cursor;
 
     const query: any = {};
@@ -237,9 +243,7 @@ export const fetchOrdersService: ServiceFunctionParamType<
     if (params.order_id) query._id = params.order_id;
     if (params.user_id) query.user_id = params.user_id;
     if (params.payment_method) query.payment_method = params.payment_method;
-    if (params.payment_status) query.payment_status = params.payment_status;
-    if (params.fulfillment_status)
-      query.fulfillment_status = params.fulfillment_status;
+    if (params.status) query.status = params.status;
 
     // Search by order_id, email, or name
     if (params.search) {
@@ -371,17 +375,17 @@ export const getOrderDetailsService: ServiceFunctionParamType<
   }
 };
 
-export const updateOrderFulfillmentService: ServiceFunctionParamType<
+export const updateOrderStatusService: ServiceFunctionParamType<
   UpdateOrderType,
   UpdateOrderResponse
 > = async (params) => {
-  const source = "UPDATE ORDER FULFILLMENT SERVICE";
-  logger.info("Starting updateOrderFulfillmentService", { body: params });
+  const source = "UPDATE ORDER STATUS SERVICE";
+  logger.info("Starting updateOrderStatusService", { body: params });
 
   try {
     const order = await OrderModel.findOneAndUpdate(
-      { _id: params.order_id },
-      { $set: { fulfillment_status: params.fulfillment_status } },
+      { order_id: params.order_id },
+      { $set: { status: params.status } },
       { new: true }
     )
       .lean()
@@ -398,8 +402,8 @@ export const updateOrderFulfillmentService: ServiceFunctionParamType<
 
     return {
       data: {
-        data: order as unknown as OrderTblType,
-        message: "Order fulfillment status updated successfully",
+        data: order as unknown as any,
+        message: "Order status updated successfully",
       },
       errorMessage: null,
       status: StatusCodes.OK,
@@ -415,19 +419,15 @@ export const updateOrderFulfillmentService: ServiceFunctionParamType<
 
 export const markBankTransferAsPaidService: ServiceFunctionParamType<
   { order_id: string },
-  any
+  UpdateOrderResponse
 > = async (params) => {
   const source = "MARK BANK TRANSFER AS PAID SERVICE";
   logger.info("Starting markBankTransferAsPaidService", { body: params });
 
   try {
     const order = await OrderModel.findOneAndUpdate(
-      {
-        order_id: params.order_id,
-        payment_method: PaymentMethod.BANK_TRANSFER,
-        payment_status: PaymentStatus.AWAITING_BANK_TRANSFER,
-      },
-      { $set: { payment_status: PaymentStatus.COMPLETED } },
+      { order_id: params.order_id },
+      { $set: { status: OrderStatus.PAID } },
       { new: true }
     )
       .lean()
@@ -436,16 +436,22 @@ export const markBankTransferAsPaidService: ServiceFunctionParamType<
     if (!order) {
       throw new CustomError({
         data: null,
-        errorMessage: "Order not found or not eligible for payment update",
+        errorMessage: "Order not found",
         source,
         status: StatusCodes.NOT_FOUND,
       });
     }
 
+    // Update to PROCESSING after being marked as PAID
+    await OrderModel.updateOne(
+      { order_id: params.order_id },
+      { $set: { status: OrderStatus.PROCESSING } }
+    ).exec();
+
     return {
       data: {
-        data: order,
-        message: "Payment status updated successfully",
+        data: { ...order, status: OrderStatus.PROCESSING } as unknown as any,
+        message: "Order marked as paid and moved to processing",
       },
       errorMessage: null,
       status: StatusCodes.OK,

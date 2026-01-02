@@ -1,12 +1,8 @@
-import {
-  FulfillmentStatus,
-  IOrder,
-  PaymentStatus,
-} from "../models/mongoose/Order.model";
+import { IOrder, OrderStatus } from "../models/mongoose/Order.model";
 import {
   CreateOrderZodType,
   FetchOrdersZodType,
-  UpdateOrderFulfillmentZodType,
+  UpdateOrderStatusZodType,
 } from "../schemas/order.zod.schemas";
 
 export type CreateOrderRequest = CreateOrderZodType;
@@ -14,23 +10,20 @@ export type CreateOrderRequest = CreateOrderZodType;
 export interface CreateOrderResponse {
   order_id: string;
   total_amount: number;
-  payment_status: PaymentStatus;
-  fulfillment_status: FulfillmentStatus;
+  status: OrderStatus;
+  transaction_reference?: string;
   createdAt: Date;
 }
 
 export type FetchOrdersType = FetchOrdersZodType;
 
-export interface UpdateOrderType
-  extends Partial<UpdateOrderFulfillmentZodType> {
+export interface UpdateOrderType extends Partial<UpdateOrderStatusZodType> {
   order_id: string;
-  payment_status?: PaymentStatus;
 }
 
 export interface UpdateOrderResponse {
   order_id: string;
-  payment_status: PaymentStatus;
-  fulfillment_status: FulfillmentStatus;
+  status: OrderStatus;
 }
 
 export interface OrderTblType extends IOrder {

@@ -4,14 +4,14 @@ import {
   fetchOrdersController,
   getOrderDetailsController,
   markBankTransferAsPaidController,
-  updateOrderFulfillmentController,
+  updateOrderStatusController,
 } from "../../controllers/order.controller";
 import { Zod_ValidationMiddleware } from "../../middlewares/validations/zod.validation.middleware";
 import {
   createOrderZodSchema,
   fetchOrdersZodSchema,
   orderIdParamZodSchema,
-  updateOrderFulfillmentZodSchema,
+  updateOrderStatusZodSchema,
 } from "../../schemas/order.zod.schemas";
 
 const router = Router();
@@ -53,10 +53,10 @@ router.patch(
     path: "params",
   }),
   Zod_ValidationMiddleware({
-    schema: updateOrderFulfillmentZodSchema,
+    schema: updateOrderStatusZodSchema,
     source: "Update Order Fulfillment (Body)",
   }),
-  updateOrderFulfillmentController
+  updateOrderStatusController
 );
 router.patch(
   "/:order_id/mark-paid",
